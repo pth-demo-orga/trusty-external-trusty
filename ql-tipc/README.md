@@ -15,6 +15,7 @@ It is intended to enable Trusty IPC in bootloader environments.
 
 ### Misc
 
+- examples/ - Implementations of bootloader-specific code.
 - arch/$ARCH/ - Architecture dependent implementation of Trusty device
    (see trusty_dev.h). Implements SMCs on ARM for example.
 
