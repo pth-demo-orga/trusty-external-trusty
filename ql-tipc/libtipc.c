@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <trusty/avb.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
@@ -38,6 +39,7 @@ static void *rpmb_ctx;
 void trusty_ipc_shutdown(void)
 {
     (void)rpmb_storage_proxy_shutdown(_ipc_dev);
+    (void)avb_tipc_shutdown(_ipc_dev);
 
     /* shutdown Trusty IPC device */
     (void)trusty_ipc_dev_shutdown(_ipc_dev);
@@ -74,6 +76,13 @@ int trusty_ipc_init(void)
     if (rc != 0) {
         trusty_error("Initlializing RPMB storage proxy service failed (%d)\n",
                      rc);
+        return rc;
+    }
+
+    trusty_info("Initializing Trusty AVB client\n");
+    rc = avb_tipc_init(_ipc_dev);
+    if (rc != 0) {
+        trusty_error("Initlializing Trusty AVB client failed (%d)\n", rc);
         return rc;
     }
 

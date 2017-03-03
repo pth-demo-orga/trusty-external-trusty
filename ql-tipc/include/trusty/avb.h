@@ -21,19 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TRUSTY_LIBTIPC_H_
-#define TRUSTY_LIBTIPC_H_
 
-#include <trusty/avb.h>
+#ifndef TRUSTY_AVB_H_
+#define TRUSTY_AVB_H_
+
 #include <trusty/sysdeps.h>
+#include <trusty/trusty_ipc.h>
+#include <interface/avb/avb.h>
 
 /*
- * Initialize TIPC library
+ * Initialize AVB TIPC client. Returns one of trusty_err.
+ *
+ * @dev: initialized with trusty_ipc_dev_create
  */
-void trusty_ipc_init(void);
+int avb_tipc_init(struct trusty_ipc_dev *dev);
 /*
- * Shutdown TIPC library
+ * Shutdown AVB TIPC client.
+ *
+ * @dev: initialized with trusty_ipc_dev_create
  */
-void trusty_ipc_shutdown(void);
+void avb_tipc_shutdown(struct trusty_ipc_dev *dev);
+/*
+ * Send request to secure side to read rollback index.
+ * Returns one of trusty_err.
+ *
+ * @slot:    rollback index slot
+ * @value:   rollback index value stored here
+ */
+int trusty_read_rollback_index(uint32_t slot, uint64_t *value);
+/*
+ * Send request to secure side to write rollback index
+ * Returns one of trusty_err.
+ *
+ * @slot:    rollback index slot
+ * @value:   rollback index value to write
+ */
+int trusty_write_rollback_index(uint32_t slot, uint64_t value);
 
-#endif /* TRUSTY_LIBTIPC_H_ */
+#endif /* TRUSTY_AVB_H_ */

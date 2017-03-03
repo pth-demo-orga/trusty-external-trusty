@@ -11,6 +11,7 @@ It is intended to enable Trusty IPC in bootloader environments.
 - ipc - IPC library
 - ipc_dev - Helper functions for sending requests to the secure OS
 - rpmb_proxy - Handles RPMB requests from secure storage service
+- avb - Sends requests to the Android Verified Boot service
 
 ### Misc
 
