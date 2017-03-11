@@ -23,6 +23,7 @@
  */
 
 #include <trusty/avb.h>
+#include <trusty/keymaster.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
@@ -40,6 +41,7 @@ void trusty_ipc_shutdown(void)
 {
     (void)rpmb_storage_proxy_shutdown(_ipc_dev);
     (void)avb_tipc_shutdown(_ipc_dev);
+    (void)km_tipc_shutdown(_ipc_dev);
 
     /* shutdown Trusty IPC device */
     (void)trusty_ipc_dev_shutdown(_ipc_dev);
@@ -83,6 +85,13 @@ int trusty_ipc_init(void)
     rc = avb_tipc_init(_ipc_dev);
     if (rc != 0) {
         trusty_error("Initlializing Trusty AVB client failed (%d)\n", rc);
+        return rc;
+    }
+
+    trusty_info("Initializing Trusty Keymaster client\n");
+    rc = km_tipc_init(_ipc_dev);
+    if (rc != 0) {
+        trusty_error("Initlializing Trusty Keymaster client failed (%d)\n", rc);
         return rc;
     }
 
