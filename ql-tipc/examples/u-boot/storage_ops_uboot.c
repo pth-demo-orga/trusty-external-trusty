@@ -94,7 +94,7 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
         ret = mmc_rpmb_response(rpmb_dev, (struct s_rpmb *)rpmb_read_data,
                                 read_size / MMC_BLOCK_SIZE, 0);
         memcpy((void *)read_buf, rpmb_read_data, read_size);
-        if (ret) {
+        if (ret < 0) {
             trusty_error("failed to execute rpmb read\n");
             return ret;
         }
