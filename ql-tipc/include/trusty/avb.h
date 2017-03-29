@@ -57,5 +57,25 @@ int trusty_read_rollback_index(uint32_t slot, uint64_t *value);
  * @value:   rollback index value to write
  */
 int trusty_write_rollback_index(uint32_t slot, uint64_t value);
+/*
+ * Send request to secure side to read permanent attributes. When permanent
+ * attributes are stored in RPMB, a hash of the permanent attributes which is
+ * given to AVB during verification MUST still be backed by write-once hardware.
+ *
+ * Copies attributes received by secure side to |attributes|. If |size| does not
+ * match the size returned by the secure side, an error is returned. Returns one
+ * of trusty_err.
+ *
+ * @attributes:  caller allocated buffer
+ * @size:        size of |attributes|
+ */
+int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size);
+/*
+ * Send request to secure side to write permanent attributes. Permanent
+ * attributes can only be written to storage once.
+ *
+ * Returns one of trusty_err.
+ */
+int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size);
 
 #endif /* TRUSTY_AVB_H_ */

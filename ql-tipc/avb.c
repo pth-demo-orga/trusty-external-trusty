@@ -61,11 +61,24 @@ static int avb_read_response(struct avb_message *msg, uint32_t cmd, void *resp,
         trusty_error("malformed response\n");
         return TRUSTY_ERR_GENERIC;
     }
-    return rc;
+    /* return payload size */
+    return rc - sizeof(*msg);
 }
 
+/*
+ * Convenience function to send a request to the AVB service and read the
+ * response.
+ *
+ * @cmd: the command
+ * @req: the request buffer
+ * @req_size: size of the request buffer
+ * @resp: the response buffer
+ * @resp_size_p: pointer to the size of the response buffer. changed to the
+                 actual size of the response read from the secure side
+ * @handle_rpmb: true if the request is expected to invoke RPMB callbacks
+ */
 static int avb_do_tipc(uint32_t cmd, void *req, uint32_t req_size, void *resp,
-                       uint32_t resp_size, bool handle_rpmb)
+                       uint32_t *resp_size_p, bool handle_rpmb)
 {
     int rc;
     struct avb_message msg = { .cmd = cmd };
@@ -91,21 +104,31 @@ static int avb_do_tipc(uint32_t cmd, void *req, uint32_t req_size, void *resp,
         }
     }
 
+    uint32_t resp_size = resp_size_p ? *resp_size_p : 0;
     rc = avb_read_response(&msg, cmd, resp, resp_size);
     if (rc < 0) {
         trusty_error("%s: failed (%d) to read AVB response\n", __func__, rc);
         return rc;
     }
-
-    return msg.result;
+    /* change response size to actual response size */
+    if (resp_size_p && rc != *resp_size_p) {
+        *resp_size_p = rc;
+    }
+    if (msg.result != AVB_ERROR_NONE) {
+        trusty_error("%s: AVB service returned error (%d)\n", __func__,
+                     msg.result);
+        return TRUSTY_ERR_GENERIC;
+    }
+    return TRUSTY_ERR_NONE;
 }
 
 static int avb_get_version(uint32_t *version)
 {
     int rc;
     struct avb_get_version_resp resp;
+    uint32_t resp_size = sizeof(resp);
 
-    rc = avb_do_tipc(AVB_GET_VERSION, NULL, 0, &resp, sizeof(resp), false);
+    rc = avb_do_tipc(AVB_GET_VERSION, NULL, 0, &resp, &resp_size, false);
 
     *version = resp.version;
     return rc;
@@ -164,9 +187,10 @@ int trusty_read_rollback_index(uint32_t slot, uint64_t *value)
     int rc;
     struct avb_rollback_req req = { .slot = slot, .value = 0 };
     struct avb_rollback_resp resp;
+    uint32_t resp_size = sizeof(resp);
 
     rc = avb_do_tipc(READ_ROLLBACK_INDEX, &req, sizeof(req), &resp,
-                     sizeof(resp), true);
+                     &resp_size, true);
 
     *value = resp.value;
     return rc;
@@ -177,8 +201,32 @@ int trusty_write_rollback_index(uint32_t slot, uint64_t value)
     int rc;
     struct avb_rollback_req req = { .slot = slot, .value = value };
     struct avb_rollback_resp resp;
+    uint32_t resp_size = sizeof(resp);
 
     rc = avb_do_tipc(WRITE_ROLLBACK_INDEX, &req, sizeof(req), &resp,
-                     sizeof(resp), true);
+                     &resp_size, true);
     return rc;
+}
+
+int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size)
+{
+    uint8_t resp_buf[AVB_MAX_BUFFER_LENGTH];
+    uint32_t resp_size = AVB_MAX_BUFFER_LENGTH;
+    int rc = avb_do_tipc(READ_PERMANENT_ATTRIBUTES, NULL, 0, resp_buf,
+                         &resp_size, true);
+    if (rc != 0) {
+        return rc;
+    }
+    /* ensure caller passed size matches size returned by Trusty */
+    if (size != resp_size) {
+        return TRUSTY_ERR_INVALID_ARGS;
+    }
+    trusty_memcpy(attributes, resp_buf, resp_size);
+    return rc;
+}
+
+int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size)
+{
+    return avb_do_tipc(WRITE_PERMANENT_ATTRIBUTES, attributes, size, NULL, NULL,
+                       true);
 }
