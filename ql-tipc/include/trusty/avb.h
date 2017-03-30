@@ -77,5 +77,18 @@ int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size);
  * Returns one of trusty_err.
  */
 int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size);
+/*
+ * Send request to secure side to read device lock state from RPMB.
+ *
+ * Returns one of trusty_err.
+ */
+int trusty_read_lock_state(uint8_t *lock_state);
+/*
+ * Send request to secure side to write device lock state to RPMB. If the lock
+ * state is changed, all rollback index data will be cleared.
+ *
+ * Returns one of trusty_err.
+ */
+int trusty_write_lock_state(uint8_t lock_state);
 
 #endif /* TRUSTY_AVB_H_ */

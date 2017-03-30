@@ -230,3 +230,16 @@ int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size)
     return avb_do_tipc(WRITE_PERMANENT_ATTRIBUTES, attributes, size, NULL, NULL,
                        true);
 }
+
+int trusty_read_lock_state(uint8_t *lock_state)
+{
+    uint32_t resp_size = sizeof(*lock_state);
+    return avb_do_tipc(READ_LOCK_STATE, NULL, 0, lock_state,
+                       &resp_size, true);
+}
+
+int trusty_write_lock_state(uint8_t lock_state)
+{
+    return avb_do_tipc(WRITE_LOCK_STATE, &lock_state, sizeof(lock_state), NULL,
+                       NULL, true);
+}
