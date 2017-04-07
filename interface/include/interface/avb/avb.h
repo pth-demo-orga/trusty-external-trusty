@@ -28,15 +28,19 @@
 #include <trusty/sysdeps.h>
 
 #define AVB_PORT "com.android.trusty.avb"
-#define AVB_MAX_BUFFER_LENGTH 1024
+#define AVB_MAX_BUFFER_LENGTH 2048
 
 enum avb_command {
     AVB_REQ_SHIFT = 1,
     AVB_RESP_BIT  = 1,
 
-    READ_ROLLBACK_INDEX  = (0 << AVB_REQ_SHIFT),
-    WRITE_ROLLBACK_INDEX = (1 << AVB_REQ_SHIFT),
-    AVB_GET_VERSION      = (2 << AVB_REQ_SHIFT),
+    READ_ROLLBACK_INDEX        = (0 << AVB_REQ_SHIFT),
+    WRITE_ROLLBACK_INDEX       = (1 << AVB_REQ_SHIFT),
+    AVB_GET_VERSION            = (2 << AVB_REQ_SHIFT),
+    READ_PERMANENT_ATTRIBUTES  = (3 << AVB_REQ_SHIFT),
+    WRITE_PERMANENT_ATTRIBUTES = (4 << AVB_REQ_SHIFT),
+    READ_LOCK_STATE            = (5 << AVB_REQ_SHIFT),
+    WRITE_LOCK_STATE           = (6 << AVB_REQ_SHIFT),
 };
 
 /**
@@ -53,8 +57,8 @@ enum avb_error {
 
 /**
  * avb_message - Serial header for communicating with AVB server
- * @cmd:     the command, one of [READ|WRITE]_ROLLBACK_INDEX. Payload must
-             be a serialized buffer of the corresponding request object.
+ * @cmd:     the command. Payload must be a serialized buffer of the
+ *           corresponding request object.
  * @result:  resulting error code for message, one of avb_error.
  * @payload: start of the serialized command specific payload
  */
