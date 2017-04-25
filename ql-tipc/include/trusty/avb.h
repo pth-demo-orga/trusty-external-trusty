@@ -90,5 +90,13 @@ int trusty_read_lock_state(uint8_t *lock_state);
  * Returns one of trusty_err.
  */
 int trusty_write_lock_state(uint8_t lock_state);
+/*
+ * Send request to secure side to lock the boot state. After this is invoked,
+ * the non-secure side will not be able to write to data managed by the AVB
+ * service until next boot.
+ *
+ * Returns one of trusty_err.
+ */
+int trusty_lock_boot_state(void);
 
 #endif /* TRUSTY_AVB_H_ */

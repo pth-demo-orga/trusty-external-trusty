@@ -243,3 +243,8 @@ int trusty_write_lock_state(uint8_t lock_state)
     return avb_do_tipc(WRITE_LOCK_STATE, &lock_state, sizeof(lock_state), NULL,
                        NULL, true);
 }
+
+int trusty_lock_boot_state(void)
+{
+    return avb_do_tipc(LOCK_BOOT_STATE, NULL, 0, NULL, NULL, false);
+}
