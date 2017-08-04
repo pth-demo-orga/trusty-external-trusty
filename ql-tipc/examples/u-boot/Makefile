@@ -38,6 +38,7 @@ obj-y += \
     $(QL_TIPC)/ipc_dev.o \
     $(QL_TIPC)/libtipc.o \
     $(QL_TIPC)/rpmb_proxy.o \
+    $(QL_TIPC)/util.o \
     sysdeps_uboot.o \
     storage_ops_uboot.o
 
