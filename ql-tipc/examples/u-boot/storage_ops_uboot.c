@@ -62,7 +62,7 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
                  rel_write_size);
             return TRUSTY_ERR_INVALID_ARGS;
         }
-        memcpy(rpmb_rel_write_data, rel_write_data, rel_write_size);
+        trusty_memcpy(rpmb_rel_write_data, rel_write_data, rel_write_size);
         ret = mmc_rpmb_request(rpmb_dev,
                                (const struct s_rpmb *)rpmb_rel_write_data,
                                rel_write_size / MMC_BLOCK_SIZE, true);
@@ -77,7 +77,7 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
                          write_size);
             return TRUSTY_ERR_INVALID_ARGS;
         }
-        memcpy(rpmb_write_data, write_data, write_size);
+        trusty_memcpy(rpmb_write_data, write_data, write_size);
         ret = mmc_rpmb_request(rpmb_dev, (const struct s_rpmb *)rpmb_write_data,
                                write_size / MMC_BLOCK_SIZE, false);
         if (ret) {
@@ -93,7 +93,7 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
         }
         ret = mmc_rpmb_response(rpmb_dev, (struct s_rpmb *)rpmb_read_data,
                                 read_size / MMC_BLOCK_SIZE, 0);
-        memcpy((void *)read_buf, rpmb_read_data, read_size);
+        trusty_memcpy((void *)read_buf, rpmb_read_data, read_size);
         if (ret < 0) {
             trusty_error("failed to execute rpmb read\n");
             return ret;

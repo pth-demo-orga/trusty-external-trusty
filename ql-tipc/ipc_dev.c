@@ -87,7 +87,7 @@ static size_t iovec_to_buf(void *buf, size_t buf_len,
         if (to_copy > buf_len)
             to_copy = buf_len;
 
-        memcpy((uint8_t *)buf + buf_pos, iovs[i].base, to_copy);
+        trusty_memcpy((uint8_t *)buf + buf_pos, iovs[i].base, to_copy);
 
         buf_pos += to_copy;
         buf_len -= to_copy;
@@ -121,7 +121,7 @@ static size_t buf_to_iovec(const struct trusty_ipc_iovec *iovs, size_t iovs_cnt,
         if (!to_copy)
             continue;
 
-        memcpy(iovs[i].base, buf_ptr, to_copy);
+        trusty_memcpy(iovs[i].base, buf_ptr, to_copy);
 
         copied  += to_copy;
         buf_ptr += to_copy;
@@ -235,7 +235,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev *dev, const char *port,
     trusty_debug("%s: connecting to '%s'\n", __func__, port);
 
     /* check port name length */
-    port_len = strlen(port) + 1;
+    port_len = trusty_strlen(port) + 1;
     if (port_len > (dev->buf_size - sizeof(*cmd) + sizeof(*req))) {
         /* it would not fit into buffer */
         trusty_error("%s: port name is too long (%zu)\n", __func__, port_len);
@@ -251,7 +251,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev *dev, const char *port,
     req = (struct trusty_ipc_connect_req *)cmd->payload;
     memset((void *)req, 0, sizeof(*req));
     req->cookie = cookie;
-    strcpy((char *)req->name, port);
+    trusty_strcpy((char *)req->name, port);
     cmd->payload_len = sizeof(*req) + port_len;
 
     /* call secure os */
@@ -348,7 +348,7 @@ int trusty_ipc_dev_get_event(struct trusty_ipc_dev *dev, handle_t chan,
     }
 
     /* copy out event */
-    memcpy(event, (const void *)cmd->payload, sizeof(*event));
+    trusty_memcpy(event, (const void *)cmd->payload, sizeof(*event));
     return TRUSTY_ERR_NONE;
 }
 

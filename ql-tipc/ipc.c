@@ -101,7 +101,7 @@ void trusty_ipc_chan_init(struct trusty_ipc_chan *chan,
     trusty_assert(chan);
     trusty_assert(dev);
 
-    memset(chan, 0, sizeof(*chan));
+    trusty_memset(chan, 0, sizeof(*chan));
 
     chan->handle = INVALID_IPC_HANDLE;
     chan->dev = dev;
