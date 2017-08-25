@@ -244,12 +244,12 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev *dev, const char *port,
 
     /* prepare command */
     cmd = dev->buf_vaddr;
-    memset((void *)cmd, 0, sizeof(*cmd));
+    trusty_memset((void *)cmd, 0, sizeof(*cmd));
     cmd->opcode = QL_TIPC_DEV_CONNECT;
 
     /* prepare payload  */
     req = (struct trusty_ipc_connect_req *)cmd->payload;
-    memset((void *)req, 0, sizeof(*req));
+    trusty_memset((void *)req, 0, sizeof(*req));
     req->cookie = cookie;
     trusty_strcpy((char *)req->name, port);
     cmd->payload_len = sizeof(*req) + port_len;
@@ -284,7 +284,7 @@ int trusty_ipc_dev_close(struct trusty_ipc_dev *dev, handle_t handle)
 
     /* prepare command */
     cmd = dev->buf_vaddr;
-    memset((void *)cmd, 0, sizeof(*cmd));
+    trusty_memset((void *)cmd, 0, sizeof(*cmd));
     cmd->opcode = QL_TIPC_DEV_DISCONNECT;
     cmd->handle = handle;
     /* no payload */
@@ -319,12 +319,12 @@ int trusty_ipc_dev_get_event(struct trusty_ipc_dev *dev, handle_t chan,
 
     /* prepare command */
     cmd = dev->buf_vaddr;
-    memset((void *)cmd, 0, sizeof(*cmd));
+    trusty_memset((void *)cmd, 0, sizeof(*cmd));
     cmd->opcode = QL_TIPC_DEV_GET_EVENT;
     cmd->handle = chan;
 
     /* prepare payload  */
-    memset((void *)cmd->payload, 0, sizeof(struct trusty_ipc_wait_req));
+    trusty_memset((void *)cmd->payload, 0, sizeof(struct trusty_ipc_wait_req));
     cmd->payload_len = sizeof(struct trusty_ipc_wait_req);
 
     /* call into secure os */
@@ -371,7 +371,7 @@ int trusty_ipc_dev_send(struct trusty_ipc_dev *dev, handle_t chan,
 
     /* prepare command */
     cmd = dev->buf_vaddr;
-    memset((void *)cmd, 0, sizeof(*cmd));
+    trusty_memset((void *)cmd, 0, sizeof(*cmd));
     cmd->opcode = QL_TIPC_DEV_SEND;
     cmd->handle = chan;
 
@@ -409,7 +409,7 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev *dev, handle_t chan,
 
     /* prepare command */
     cmd = dev->buf_vaddr;
-    memset((void *)cmd, 0, sizeof(*cmd));
+    trusty_memset((void *)cmd, 0, sizeof(*cmd));
     cmd->opcode = QL_TIPC_DEV_RECV;
     cmd->handle = chan;
     /* no payload */
