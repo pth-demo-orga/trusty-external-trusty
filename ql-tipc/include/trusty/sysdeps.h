@@ -81,7 +81,7 @@ void trusty_printv(const char *format, ...);
 /*
  * Copy @n bytes from @src to @dest.
  */
-void *trusty_memcpy(void *dest, void *src, size_t n);
+void *trusty_memcpy(void *dest, const void *src, size_t n);
 /*
  * Set @n bytes starting at @dest to @c. Returns @dest.
  */

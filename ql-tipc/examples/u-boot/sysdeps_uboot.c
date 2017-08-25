@@ -68,7 +68,7 @@ void trusty_printv(const char *message, ...)
     va_end(ap);
 }
 
-void *trusty_memcpy(void *dest, void *src, size_t n)
+void *trusty_memcpy(void *dest, const void *src, size_t n)
 {
     return memcpy(dest, src, n);
 }
