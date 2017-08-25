@@ -25,6 +25,7 @@
 #define TRUSTY_LIBTIPC_H_
 
 #include <trusty/avb.h>
+#include <trusty/keymaster.h>
 #include <trusty/sysdeps.h>
 
 /*
