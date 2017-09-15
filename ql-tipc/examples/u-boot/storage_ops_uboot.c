@@ -27,23 +27,17 @@
 #include <trusty/util.h>
 
 #include <common.h>
+#include <memalign.h>
 #include <mmc.h>
 
 void *rpmb_storage_get_ctx(void)
 {
-    int ret;
-    struct mmc *mmc = find_mmc_device(0);
+    /* Unused for U-boot */
+    return NULL;
+}
 
-    /* Switch to RPMB partition */
-    if (mmc->part_num != MMC_PART_RPMB) {
-        ret = mmc_switch_part(0, MMC_PART_RPMB);
-        if (ret) {
-            trusty_error("failed to switch to RPMB partition\n");
-            return NULL;
-        }
-        mmc->part_num = MMC_PART_RPMB;
-    }
-    return (void *)mmc;
+void rpmb_storage_put_ctx(void *dev)
+{
 }
 
 int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
@@ -53,51 +47,76 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
     ALLOC_CACHE_ALIGN_BUFFER(uint8_t, rpmb_rel_write_data, rel_write_size);
     ALLOC_CACHE_ALIGN_BUFFER(uint8_t, rpmb_write_data, write_size);
     ALLOC_CACHE_ALIGN_BUFFER(uint8_t, rpmb_read_data, read_size);
-    int ret;
+    int ret = TRUSTY_ERR_NONE;
+    struct mmc *mmc = find_mmc_device(mmc_get_env_dev());
+    char original_part = mmc->block_dev.hwpart;
+
+    /* Switch to RPMB partition */
+    if (mmc->block_dev.hwpart != MMC_PART_RPMB) {
+        ret = mmc_switch_part(mmc, MMC_PART_RPMB);
+        if (ret) {
+            trusty_error("failed to switch to RPMB partition\n");
+            ret = TRUSTY_ERR_GENERIC;
+            goto end;
+        }
+        mmc->block_dev.hwpart = MMC_PART_RPMB;
+    }
 
     if (rel_write_size) {
         if (rel_write_size % MMC_BLOCK_SIZE) {
             trusty_error(
                 "rel_write_size is not a multiple of MMC_BLOCK_SIZE: %d\n",
                  rel_write_size);
-            return TRUSTY_ERR_INVALID_ARGS;
+            ret = TRUSTY_ERR_INVALID_ARGS;
+            goto end;
         }
         trusty_memcpy(rpmb_rel_write_data, rel_write_data, rel_write_size);
-        ret = mmc_rpmb_request(rpmb_dev,
+        ret = mmc_rpmb_request(mmc,
                                (const struct s_rpmb *)rpmb_rel_write_data,
                                rel_write_size / MMC_BLOCK_SIZE, true);
         if (ret) {
             trusty_error("failed to execute rpmb reliable write\n");
-            return ret;
+            goto end;
         }
     }
     if (write_size) {
         if (write_size % MMC_BLOCK_SIZE) {
             trusty_error("write_size is not a multiple of MMC_BLOCK_SIZE: %d\n",
                          write_size);
-            return TRUSTY_ERR_INVALID_ARGS;
+            ret = TRUSTY_ERR_INVALID_ARGS;
+            goto end;
         }
         trusty_memcpy(rpmb_write_data, write_data, write_size);
-        ret = mmc_rpmb_request(rpmb_dev, (const struct s_rpmb *)rpmb_write_data,
+        ret = mmc_rpmb_request(mmc, (const struct s_rpmb *)rpmb_write_data,
                                write_size / MMC_BLOCK_SIZE, false);
         if (ret) {
             trusty_error("failed to execute rpmb write\n");
-            return ret;
+            goto end;
         }
     }
     if (read_size) {
         if (read_size % MMC_BLOCK_SIZE) {
             trusty_error("read_size is not a multiple of MMC_BLOCK_SIZE: %d\n",
                          read_size);
-            return TRUSTY_ERR_INVALID_ARGS;
+            ret = TRUSTY_ERR_INVALID_ARGS;
+            goto end;
         }
-        ret = mmc_rpmb_response(rpmb_dev, (struct s_rpmb *)rpmb_read_data,
+        ret = mmc_rpmb_response(mmc, (struct s_rpmb *)rpmb_read_data,
                                 read_size / MMC_BLOCK_SIZE, 0);
         trusty_memcpy((void *)read_buf, rpmb_read_data, read_size);
         if (ret < 0) {
             trusty_error("failed to execute rpmb read\n");
-            return ret;
         }
     }
-    return TRUSTY_ERR_NONE;
+
+end:
+    /* Return to original partition */
+    if (mmc->block_dev.hwpart != original_part) {
+        if (mmc_switch_part(mmc, original_part) != 0) {
+            trusty_error("failed to switch back to original partition\n");
+            return TRUSTY_ERR_GENERIC;
+        }
+        mmc->block_dev.hwpart = original_part;
+    }
+    return ret;
 }

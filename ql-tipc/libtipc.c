@@ -40,11 +40,14 @@ static void *rpmb_ctx;
 void trusty_ipc_shutdown(void)
 {
     (void)rpmb_storage_proxy_shutdown(_ipc_dev);
+    (void)rpmb_storage_put_ctx(rpmb_ctx);
+
     (void)avb_tipc_shutdown(_ipc_dev);
     (void)km_tipc_shutdown(_ipc_dev);
 
     /* shutdown Trusty IPC device */
     (void)trusty_ipc_dev_shutdown(_ipc_dev);
+
 
     /* shutdown Trusty device */
     (void)trusty_dev_shutdown(&_tdev);
