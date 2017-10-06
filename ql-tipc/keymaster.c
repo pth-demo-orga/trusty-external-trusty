@@ -23,6 +23,7 @@
  */
 
 #include <trusty/keymaster.h>
+#include <trusty/keymaster_serializable.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
@@ -185,92 +186,6 @@ void km_tipc_shutdown(struct trusty_ipc_dev *dev)
     trusty_ipc_close(&km_chan);
 
     initialized = false;
-}
-
-/**
- * Appends |data_len| bytes at |data| to |buf|. Performs no bounds checking,
- * assumes sufficient memory allocated at |buf|. Returns |buf| + |data_len|.
- */
-static uint8_t *append_to_buf(uint8_t *buf, const void *data, size_t data_len)
-{
-    if (data && data_len) {
-        trusty_memcpy(buf, data, data_len);
-    }
-    return buf + data_len;
-}
-
-/**
- * Appends |val| to |buf|. Performs no bounds checking. Returns |buf| +
- * sizeof(uint32_t).
- */
-static uint8_t *append_uint32_to_buf(uint8_t *buf, uint32_t val)
-{
-    return append_to_buf(buf, &val, sizeof(val));
-}
-
-/**
- * Appends a sized buffer to |buf|. First appends |data_len| to |buf|, then
- * appends |data_len| bytes at |data| to |buf|. Performs no bounds checking.
- * Returns |buf| + sizeof(uint32_t) + |data_len|.
- */
-static uint8_t *append_sized_buf_to_buf(uint8_t *buf, const uint8_t *data,
-                                        uint32_t data_len)
-{
-    buf = append_uint32_to_buf(buf, data_len);
-    return append_to_buf(buf, data, data_len);
-}
-
-int km_boot_params_serialize(const struct km_boot_params *params, uint8_t** out,
-                             uint32_t *out_size)
-{
-    uint8_t *tmp;
-
-    if (!out || !params || !out_size) {
-        return TRUSTY_ERR_INVALID_ARGS;
-    }
-    *out_size = (sizeof(params->os_version) + sizeof(params->os_patchlevel) +
-                 sizeof(params->device_locked) +
-                 sizeof(params->verified_boot_state) +
-                 sizeof(params->verified_boot_key_hash_size) +
-                 sizeof(params->verified_boot_hash_size) +
-                 params->verified_boot_key_hash_size +
-                 params->verified_boot_hash_size);
-    *out = trusty_calloc(*out_size, 1);
-    if (!*out) {
-        return TRUSTY_ERR_NO_MEMORY;
-    }
-
-    tmp = append_uint32_to_buf(*out, params->os_version);
-    tmp = append_uint32_to_buf(tmp, params->os_patchlevel);
-    tmp = append_uint32_to_buf(tmp, params->device_locked);
-    tmp = append_uint32_to_buf(tmp, params->verified_boot_state);
-    tmp = append_sized_buf_to_buf(tmp, params->verified_boot_key_hash,
-                                  params->verified_boot_key_hash_size);
-    tmp = append_sized_buf_to_buf(tmp, params->verified_boot_hash,
-                                  params->verified_boot_hash_size);
-
-    return TRUSTY_ERR_NONE;
-}
-
-int km_attestation_data_serialize(const struct km_attestation_data *data,
-                                 uint8_t** out, uint32_t *out_size)
-{
-    uint8_t *tmp;
-
-    if (!out || !data || !out_size) {
-        return TRUSTY_ERR_INVALID_ARGS;
-    }
-    *out_size = (sizeof(data->algorithm) + sizeof(data->data_size) +
-                 data->data_size);
-    *out = trusty_calloc(*out_size, 1);
-    if (!*out) {
-        return TRUSTY_ERR_NO_MEMORY;
-    }
-
-    tmp = append_uint32_to_buf(*out, data->algorithm);
-    tmp = append_sized_buf_to_buf(tmp, data->data, data->data_size);
-
-    return TRUSTY_ERR_NONE;
 }
 
 int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
