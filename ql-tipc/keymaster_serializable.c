@@ -96,3 +96,19 @@ int km_attestation_data_serialize(const struct km_attestation_data *data,
 
     return TRUSTY_ERR_NONE;
 }
+
+int km_raw_buffer_serialize(const struct km_raw_buffer *buf, uint8_t** out,
+                            uint32_t *out_size)
+{
+    if (!out || !buf || !out_size) {
+        return TRUSTY_ERR_INVALID_ARGS;
+    }
+    *out_size = sizeof(buf->data_size) + buf->data_size;
+    *out = trusty_calloc(*out_size, 1);
+    if (!*out) {
+        return TRUSTY_ERR_NO_MEMORY;
+    }
+    append_sized_buf_to_buf(*out, buf->data, buf->data_size);
+
+    return TRUSTY_ERR_NONE;
+}
