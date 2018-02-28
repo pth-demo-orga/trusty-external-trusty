@@ -73,4 +73,10 @@ int rpmb_storage_send(void *rpmb_dev,
  */
 void *rpmb_storage_get_ctx(void);
 
+/*
+ * Release a previously obtained RPMB context.
+ * Implementation is platform specific.
+ */
+void rpmb_storage_put_ctx(void *dev);
+
 #endif /* TRUSTY_RPMB_H_ */
