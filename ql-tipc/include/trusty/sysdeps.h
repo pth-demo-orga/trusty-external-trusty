@@ -32,6 +32,9 @@
 #include <compiler.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 /*
  * These attribute macros may need to be adjusted if not using gcc or clang.
  */
