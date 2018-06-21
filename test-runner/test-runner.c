@@ -75,7 +75,8 @@ void boot(void)
     /* Read test arguments from host (port name of test server to connect to) */
     cmdline_len = host_get_cmdline(cmdline, sizeof(cmdline));
     if (!starts_with(boottest_cmd, cmdline, cmdline_len)) {
-        /* No test was requested, just return for now */
+        /* No test was requested, boot next operating system */
+        boot_next();
         return;
     }
     port = cmdline + sizeof(boottest_cmd) - 1;

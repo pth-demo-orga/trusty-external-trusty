@@ -40,3 +40,8 @@ void host_exit(uint32_t code);
 size_t host_get_cmdline(char *strbuf, size_t strbufsize);
 int host_open(const char *path, uint32_t mode);
 int host_write(int handle, const void *data, size_t size);
+
+/*
+ * Boot next operating system.
+ */
+void boot_next(void);

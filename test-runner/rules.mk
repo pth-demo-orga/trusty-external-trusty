@@ -43,6 +43,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/$(ARCH)/asm.S \
 	$(LOCAL_DIR)/$(ARCH)/trusty_mem.c \
 	$(LOCAL_DIR)/$(ARCH)/semihosting.c \
+	$(LOCAL_DIR)/$(ARCH)/boot.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
 	$(QL_TIPC)/util.c \
