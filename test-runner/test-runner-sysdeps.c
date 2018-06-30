@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-#include <linux/string.h>
 #include <test-runner-arch.h>
 #include <trusty/sysdeps.h>
 
