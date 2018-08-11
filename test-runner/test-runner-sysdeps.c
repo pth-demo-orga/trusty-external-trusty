@@ -32,7 +32,7 @@
 static uint8_t heap[HEAP_SIZE];
 static int heap_allocated = 0;
 
-static uint8_t pages[PAGE_COUNT] __ALIGNED(PAGE_SIZE);
+static uint8_t pages[PAGE_COUNT * PAGE_SIZE] __ALIGNED(PAGE_SIZE);
 static int pages_allocated = 0;
 
 extern int trusty_encode_page_info(struct ns_mem_page_info *page_info,
@@ -148,7 +148,7 @@ void *trusty_alloc_pages(unsigned count)
     void *ret;
     if (pages_allocated + count > PAGE_COUNT)
         return NULL;
-    ret = pages + pages_allocated;
+    ret = pages + pages_allocated * PAGE_SIZE;
     pages_allocated += count;
     return ret;
 }
