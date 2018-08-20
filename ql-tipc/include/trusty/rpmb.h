@@ -36,13 +36,13 @@
  * @dev:      initialized with trusty_ipc_dev_create
  * @rpmb_dev: Context of RPMB device, initialized with rpmb_storage_get_ctx
  */
-int rpmb_storage_proxy_init(struct trusty_ipc_dev *dev, void *rpmb_dev);
+int rpmb_storage_proxy_init(struct trusty_ipc_dev* dev, void* rpmb_dev);
 /*
  * Shutdown RPMB storage proxy
  *
  * @dev: initialized with trusty_ipc_dev_create
  */
-void rpmb_storage_proxy_shutdown(struct trusty_ipc_dev *dev);
+void rpmb_storage_proxy_shutdown(struct trusty_ipc_dev* dev);
 /*
  * Execute RPMB command. Implementation is platform specific.
  * Returns one of trusty_err.
@@ -57,22 +57,24 @@ void rpmb_storage_proxy_shutdown(struct trusty_ipc_dev *dev);
  *                       partition
  * @read_size:           Size of read_data
  */
-int rpmb_storage_send(void *rpmb_dev,
-                      const void *reliable_write_data,
+int rpmb_storage_send(void* rpmb_dev,
+                      const void* reliable_write_data,
                       size_t reliable_write_size,
-                      const void *write_data, size_t write_size,
-                      void *read_buf, size_t read_size);
+                      const void* write_data,
+                      size_t write_size,
+                      void* read_buf,
+                      size_t read_size);
 /*
  * Return context for RPMB device. This is called when the RPMB storage proxy is
  * initialized, and subsequently used when issuing RPMB storage requests.
  * Implementation is platform specific.
  */
-void *rpmb_storage_get_ctx(void);
+void* rpmb_storage_get_ctx(void);
 
 /*
  * Release a previously obtained RPMB context.
  * Implementation is platform specific.
  */
-void rpmb_storage_put_ctx(void *dev);
+void rpmb_storage_put_ctx(void* dev);
 
 #endif /* TRUSTY_RPMB_H_ */

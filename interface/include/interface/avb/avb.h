@@ -32,16 +32,16 @@
 
 enum avb_command {
     AVB_REQ_SHIFT = 1,
-    AVB_RESP_BIT  = 1,
+    AVB_RESP_BIT = 1,
 
-    READ_ROLLBACK_INDEX        = (0 << AVB_REQ_SHIFT),
-    WRITE_ROLLBACK_INDEX       = (1 << AVB_REQ_SHIFT),
-    AVB_GET_VERSION            = (2 << AVB_REQ_SHIFT),
-    READ_PERMANENT_ATTRIBUTES  = (3 << AVB_REQ_SHIFT),
+    READ_ROLLBACK_INDEX = (0 << AVB_REQ_SHIFT),
+    WRITE_ROLLBACK_INDEX = (1 << AVB_REQ_SHIFT),
+    AVB_GET_VERSION = (2 << AVB_REQ_SHIFT),
+    READ_PERMANENT_ATTRIBUTES = (3 << AVB_REQ_SHIFT),
     WRITE_PERMANENT_ATTRIBUTES = (4 << AVB_REQ_SHIFT),
-    READ_LOCK_STATE            = (5 << AVB_REQ_SHIFT),
-    WRITE_LOCK_STATE           = (6 << AVB_REQ_SHIFT),
-    LOCK_BOOT_STATE            = (7 << AVB_REQ_SHIFT),
+    READ_LOCK_STATE = (5 << AVB_REQ_SHIFT),
+    WRITE_LOCK_STATE = (6 << AVB_REQ_SHIFT),
+    LOCK_BOOT_STATE = (7 << AVB_REQ_SHIFT),
 };
 
 /**
@@ -51,8 +51,8 @@ enum avb_command {
  * @AVB_ERROR_INTERNAL:     Error occurred during an operation in Trusty
  */
 enum avb_error {
-    AVB_ERROR_NONE     = 0,
-    AVB_ERROR_INVALID  = 1,
+    AVB_ERROR_NONE = 0,
+    AVB_ERROR_INVALID = 1,
     AVB_ERROR_INTERNAL = 2,
 };
 

@@ -35,20 +35,21 @@
  * Appends |data_len| bytes at |data| to |buf|. Performs no bounds checking,
  * assumes sufficient memory allocated at |buf|. Returns |buf| + |data_len|.
  */
-uint8_t *append_to_buf(uint8_t *buf, const void *data, size_t data_len);
+uint8_t* append_to_buf(uint8_t* buf, const void* data, size_t data_len);
 
 /**
  * Appends |val| to |buf|. Performs no bounds checking. Returns |buf| +
  * sizeof(uint32_t).
  */
-uint8_t *append_uint32_to_buf(uint8_t *buf, uint32_t val);
+uint8_t* append_uint32_to_buf(uint8_t* buf, uint32_t val);
 
 /**
  * Appends a sized buffer to |buf|. First appends |data_len| to |buf|, then
  * appends |data_len| bytes at |data| to |buf|. Performs no bounds checking.
  * Returns |buf| + sizeof(uint32_t) + |data_len|.
  */
-uint8_t *append_sized_buf_to_buf(uint8_t *buf, const uint8_t *data,
+uint8_t* append_sized_buf_to_buf(uint8_t* buf,
+                                 const uint8_t* data,
                                  uint32_t data_len);
 
 /**
@@ -56,23 +57,26 @@ uint8_t *append_sized_buf_to_buf(uint8_t *buf, const uint8_t *data,
  * bytes to |*out| and writes the serialized |params| to |*out|. Caller takes
  * ownership of |*out|. Returns one of trusty_err.
  */
-int km_boot_params_serialize(const struct km_boot_params *params, uint8_t **out,
-                             uint32_t *out_size);
+int km_boot_params_serialize(const struct km_boot_params* params,
+                             uint8_t** out,
+                             uint32_t* out_size);
 
 /**
  * Serializes a km_attestation_data structure. On success, allocates |*out_size|
  * bytes to |*out| and writes the serialized |data| to |*out|. Caller takes
  * ownership of |*out|. Returns one of trusty_err.
  */
-int km_attestation_data_serialize(const struct km_attestation_data *data,
-                                  uint8_t **out, uint32_t *out_size);
+int km_attestation_data_serialize(const struct km_attestation_data* data,
+                                  uint8_t** out,
+                                  uint32_t* out_size);
 
 /**
  * Serializes a km_raw_buffer structure. On success, allocates |*out_size|
  * bytes to |*out| and writes the serialized |data| to |*out|. Caller takes
  * ownership of |*out|. Returns one of trusty_err.
  */
-int km_raw_buffer_serialize(const struct km_raw_buffer *buf, uint8_t** out,
-                            uint32_t *out_size);
+int km_raw_buffer_serialize(const struct km_raw_buffer* buf,
+                            uint8_t** out,
+                            uint32_t* out_size);
 
 #endif /* TRUSTY_KEYMASTER_SERIALIZABLE_H_ */

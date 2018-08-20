@@ -31,56 +31,65 @@
 #define KEYMASTER_MAX_BUFFER_LENGTH 4096
 
 enum keymaster_command {
-    KEYMASTER_RESP_BIT              = 1,
-    KEYMASTER_STOP_BIT              = 2,
-    KEYMASTER_REQ_SHIFT             = 2,
+    KEYMASTER_RESP_BIT = 1,
+    KEYMASTER_STOP_BIT = 2,
+    KEYMASTER_REQ_SHIFT = 2,
 
-    KM_GENERATE_KEY                 = (0 << KEYMASTER_REQ_SHIFT),
-    KM_BEGIN_OPERATION              = (1 << KEYMASTER_REQ_SHIFT),
-    KM_UPDATE_OPERATION             = (2 << KEYMASTER_REQ_SHIFT),
-    KM_FINISH_OPERATION             = (3 << KEYMASTER_REQ_SHIFT),
-    KM_ABORT_OPERATION              = (4 << KEYMASTER_REQ_SHIFT),
-    KM_IMPORT_KEY                   = (5 << KEYMASTER_REQ_SHIFT),
+    KM_GENERATE_KEY = (0 << KEYMASTER_REQ_SHIFT),
+    KM_BEGIN_OPERATION = (1 << KEYMASTER_REQ_SHIFT),
+    KM_UPDATE_OPERATION = (2 << KEYMASTER_REQ_SHIFT),
+    KM_FINISH_OPERATION = (3 << KEYMASTER_REQ_SHIFT),
+    KM_ABORT_OPERATION = (4 << KEYMASTER_REQ_SHIFT),
+    KM_IMPORT_KEY = (5 << KEYMASTER_REQ_SHIFT),
 
-    KM_EXPORT_KEY                   = (6 << KEYMASTER_REQ_SHIFT),
-    KM_GET_VERSION                  = (7 << KEYMASTER_REQ_SHIFT),
-    KM_ADD_RNG_ENTROPY              = (8 << KEYMASTER_REQ_SHIFT),
-    KM_GET_SUPPORTED_ALGORITHMS     = (9 << KEYMASTER_REQ_SHIFT),
-    KM_GET_SUPPORTED_BLOCK_MODES    = (10 << KEYMASTER_REQ_SHIFT),
-    KM_GET_SUPPORTED_PADDING_MODES  = (11 << KEYMASTER_REQ_SHIFT),
-    KM_GET_SUPPORTED_DIGESTS        = (12 << KEYMASTER_REQ_SHIFT),
+    KM_EXPORT_KEY = (6 << KEYMASTER_REQ_SHIFT),
+    KM_GET_VERSION = (7 << KEYMASTER_REQ_SHIFT),
+    KM_ADD_RNG_ENTROPY = (8 << KEYMASTER_REQ_SHIFT),
+    KM_GET_SUPPORTED_ALGORITHMS = (9 << KEYMASTER_REQ_SHIFT),
+    KM_GET_SUPPORTED_BLOCK_MODES = (10 << KEYMASTER_REQ_SHIFT),
+    KM_GET_SUPPORTED_PADDING_MODES = (11 << KEYMASTER_REQ_SHIFT),
+    KM_GET_SUPPORTED_DIGESTS = (12 << KEYMASTER_REQ_SHIFT),
     KM_GET_SUPPORTED_IMPORT_FORMATS = (13 << KEYMASTER_REQ_SHIFT),
     KM_GET_SUPPORTED_EXPORT_FORMATS = (14 << KEYMASTER_REQ_SHIFT),
-    KM_GET_KEY_CHARACTERISTICS      = (15 << KEYMASTER_REQ_SHIFT),
+    KM_GET_KEY_CHARACTERISTICS = (15 << KEYMASTER_REQ_SHIFT),
 
     // Bootloader calls.
-    KM_SET_BOOT_PARAMS                 = (0x1000 << KEYMASTER_REQ_SHIFT),
-    KM_SET_ATTESTATION_KEY             = (0x2000 << KEYMASTER_REQ_SHIFT),
-    KM_APPEND_ATTESTATION_CERT_CHAIN   = (0x3000 << KEYMASTER_REQ_SHIFT),
-    KM_ATAP_GET_CA_REQUEST             = (0x4000 << KEYMASTER_REQ_SHIFT),
-    KM_ATAP_SET_CA_RESPONSE_BEGIN      = (0x5000 << KEYMASTER_REQ_SHIFT),
-    KM_ATAP_SET_CA_RESPONSE_UPDATE     = (0x6000 << KEYMASTER_REQ_SHIFT),
-    KM_ATAP_SET_CA_RESPONSE_FINISH     = (0x7000 << KEYMASTER_REQ_SHIFT),
-    KM_ATAP_READ_UUID                  = (0x8000 << KEYMASTER_REQ_SHIFT),
+    KM_SET_BOOT_PARAMS = (0x1000 << KEYMASTER_REQ_SHIFT),
+    KM_SET_ATTESTATION_KEY = (0x2000 << KEYMASTER_REQ_SHIFT),
+    KM_APPEND_ATTESTATION_CERT_CHAIN = (0x3000 << KEYMASTER_REQ_SHIFT),
+    KM_ATAP_GET_CA_REQUEST = (0x4000 << KEYMASTER_REQ_SHIFT),
+    KM_ATAP_SET_CA_RESPONSE_BEGIN = (0x5000 << KEYMASTER_REQ_SHIFT),
+    KM_ATAP_SET_CA_RESPONSE_UPDATE = (0x6000 << KEYMASTER_REQ_SHIFT),
+    KM_ATAP_SET_CA_RESPONSE_FINISH = (0x7000 << KEYMASTER_REQ_SHIFT),
+    KM_ATAP_READ_UUID = (0x8000 << KEYMASTER_REQ_SHIFT),
 };
 
 typedef enum {
-    KM_VERIFIED_BOOT_VERIFIED = 0,    /* Full chain of trust extending from the bootloader to
-                                       * verified partitions, including the bootloader, boot
-                                       * partition, and all verified partitions*/
-    KM_VERIFIED_BOOT_SELF_SIGNED = 1, /* The boot partition has been verified using the embedded
-                                       * certificate, and the signature is valid. The bootloader
-                                       * displays a warning and the fingerprint of the public
-                                       * key before allowing the boot process to continue.*/
-    KM_VERIFIED_BOOT_UNVERIFIED = 2,  /* The device may be freely modified. Device integrity is left
-                                       * to the user to verify out-of-band. The bootloader
-                                       * displays a warning to the user before allowing the boot
-                                       * process to continue */
-    KM_VERIFIED_BOOT_FAILED = 3,      /* The device failed verification. The bootloader displays a
-                                       * warning and stops the boot process, so no keymaster
-                                       * implementation should ever actually return this value,
-                                       * since it should not run.  Included here only for
-                                       * completeness. */
+    /*
+     * Full chain of trust extending from the bootloader to verified partitions,
+     * including the bootloader, boot partition, and all verified partitions.
+     */
+    KM_VERIFIED_BOOT_VERIFIED = 0,
+    /*
+     * The boot partition has been verified using the embedded certificate, and
+     * the signature is valid. The bootloader displays a warning and the
+     * fingerprint of the public key before allowing the boot process to
+     * continue.
+     */
+    KM_VERIFIED_BOOT_SELF_SIGNED = 1,
+    /*
+     * The device may be freely modified. Device integrity is left to the user
+     * to verify out-of-band. The bootloader displays a warning to the user
+     * before allowing the boot process to continue
+     */
+    KM_VERIFIED_BOOT_UNVERIFIED = 2,
+    /*
+     * The device failed verification. The bootloader displays a warning and
+     * stops the boot process, so no keymaster implementation should ever
+     * actually return this value, since it should not run.  Included here only
+     * for completeness.
+     */
+    KM_VERIFIED_BOOT_FAILED = 3,
 } keymaster_verified_boot_t;
 
 /**
@@ -119,8 +128,10 @@ typedef enum {
     KM_ERROR_INVALID_AUTHORIZATION_TIMEOUT = -16,
     KM_ERROR_UNSUPPORTED_KEY_FORMAT = -17,
     KM_ERROR_INCOMPATIBLE_KEY_FORMAT = -18,
-    KM_ERROR_UNSUPPORTED_KEY_ENCRYPTION_ALGORITHM = -19,   /* For PKCS8 & PKCS12 */
-    KM_ERROR_UNSUPPORTED_KEY_VERIFICATION_ALGORITHM = -20, /* For PKCS8 & PKCS12 */
+    /* For PKCS8 & PKCS12 */
+    KM_ERROR_UNSUPPORTED_KEY_ENCRYPTION_ALGORITHM = -19,
+    /* For PKCS8 & PKCS12 */
+    KM_ERROR_UNSUPPORTED_KEY_VERIFICATION_ALGORITHM = -20,
     KM_ERROR_INVALID_INPUT_LENGTH = -21,
     KM_ERROR_KEY_EXPORT_OPTIONS_INVALID = -22,
     KM_ERROR_DELEGATION_NOT_ALLOWED = -23,
@@ -241,9 +252,9 @@ struct km_boot_params {
     uint32_t device_locked;
     uint32_t verified_boot_state;
     uint32_t verified_boot_key_hash_size;
-    const uint8_t *verified_boot_key_hash;
+    const uint8_t* verified_boot_key_hash;
     uint32_t verified_boot_hash_size;
-    const uint8_t *verified_boot_hash;
+    const uint8_t* verified_boot_hash;
 } TRUSTY_ATTR_PACKED;
 
 /**
@@ -256,7 +267,7 @@ struct km_boot_params {
 struct km_attestation_data {
     uint32_t algorithm;
     uint32_t data_size;
-    const uint8_t *data;
+    const uint8_t* data;
 } TRUSTY_ATTR_PACKED;
 
 /**
@@ -267,7 +278,7 @@ struct km_attestation_data {
  */
 struct km_raw_buffer {
     uint32_t data_size;
-    const uint8_t *data;
+    const uint8_t* data;
 } TRUSTY_ATTR_PACKED;
 
 #endif /* TRUSTY_INTERFACE_KEYMASTER_H_ */

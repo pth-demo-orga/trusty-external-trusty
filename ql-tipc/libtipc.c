@@ -33,12 +33,11 @@
 
 typedef uintptr_t vaddr_t;
 
-static struct trusty_ipc_dev *_ipc_dev;
+static struct trusty_ipc_dev* _ipc_dev;
 static struct trusty_dev _tdev; /* There should only be one trusty device */
-static void *rpmb_ctx;
+static void* rpmb_ctx;
 
-void trusty_ipc_shutdown(void)
-{
+void trusty_ipc_shutdown(void) {
     (void)rpmb_storage_proxy_shutdown(_ipc_dev);
     (void)rpmb_storage_put_ctx(rpmb_ctx);
 
@@ -48,13 +47,11 @@ void trusty_ipc_shutdown(void)
     /* shutdown Trusty IPC device */
     (void)trusty_ipc_dev_shutdown(_ipc_dev);
 
-
     /* shutdown Trusty device */
     (void)trusty_dev_shutdown(&_tdev);
 }
 
-int trusty_ipc_init(void)
-{
+int trusty_ipc_init(void) {
     int rc;
     /* init Trusty device */
     trusty_info("Initializing Trusty device\n");

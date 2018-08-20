@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
+#include <interface/storage/storage.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
-#include <interface/storage/storage.h>
 
 #define LOCAL_LOG 0
 
 static bool initialized;
 /* Address of rpmb device */
-static void *proxy_rpmb;
+static void* proxy_rpmb;
 struct trusty_ipc_chan proxy_chan;
 
 struct storage_msg req_msg;
@@ -47,15 +47,15 @@ static uint8_t read_buf[4096];
  * @req:     address of storage message request
  * @req_len: length of req in bytes
  */
-static int proxy_read_request(struct trusty_ipc_chan *chan,
-                              struct storage_msg *msg, void *req,
-                              size_t req_len)
-{
+static int proxy_read_request(struct trusty_ipc_chan* chan,
+                              struct storage_msg* msg,
+                              void* req,
+                              size_t req_len) {
     int rc;
 
     struct trusty_ipc_iovec req_iovs[2] = {
-        { .base = msg, .len = sizeof(*msg) },
-        { .base = req, .len = req_len },
+            {.base = msg, .len = sizeof(*msg)},
+            {.base = req, .len = req_len},
     };
     rc = trusty_ipc_recv(chan, req_iovs, 2, false);
     if (rc < 0) {
@@ -81,14 +81,12 @@ static int proxy_read_request(struct trusty_ipc_chan *chan,
  * @resp:     address of storage message response
  * @resp_len: length of resp in bytes
  */
-static int proxy_send_response(struct trusty_ipc_chan *chan,
-                               struct storage_msg *msg, void *resp,
-                               size_t resp_len)
-{
-    struct trusty_ipc_iovec resp_iovs[2] = {
-        { .base = msg, .len = sizeof(*msg) },
-        { .base = resp, .len = resp_len }
-    };
+static int proxy_send_response(struct trusty_ipc_chan* chan,
+                               struct storage_msg* msg,
+                               void* resp,
+                               size_t resp_len) {
+    struct trusty_ipc_iovec resp_iovs[2] = {{.base = msg, .len = sizeof(*msg)},
+                                            {.base = resp, .len = resp_len}};
 
     msg->cmd |= STORAGE_RESP_BIT;
     return trusty_ipc_send(chan, resp_iovs, resp ? 2 : 1, false);
@@ -102,15 +100,15 @@ static int proxy_send_response(struct trusty_ipc_chan *chan,
  * @r:       address of storage message request
  * @req_len: length of resp in bytes
  */
-static int proxy_handle_rpmb(struct trusty_ipc_chan *chan,
-                             struct storage_msg *msg, const void *r,
-                             size_t req_len)
-{
+static int proxy_handle_rpmb(struct trusty_ipc_chan* chan,
+                             struct storage_msg* msg,
+                             const void* r,
+                             size_t req_len) {
     int rc;
     size_t exp_len;
-    const void *write_data = NULL;
-    const void *rel_write_data = NULL;
-    const struct storage_rpmb_send_req *req = r;
+    const void* write_data = NULL;
+    const void* rel_write_data = NULL;
+    const struct storage_rpmb_send_req* req = r;
 
     if (req_len < sizeof(req)) {
         msg->result = STORAGE_ERR_NOT_VALID;
@@ -120,8 +118,8 @@ static int proxy_handle_rpmb(struct trusty_ipc_chan *chan,
     exp_len = sizeof(*req) + req->reliable_write_size + req->write_size;
     if (req_len != exp_len) {
         trusty_error(
-            "%s: malformed rpmb request: invalid length (%zu != %zu)\n",
-            __func__, req_len, exp_len);
+                "%s: malformed rpmb request: invalid length (%zu != %zu)\n",
+                __func__, req_len, exp_len);
         msg->result = STORAGE_ERR_NOT_VALID;
         goto err_response;
     }
@@ -157,10 +155,9 @@ static int proxy_handle_rpmb(struct trusty_ipc_chan *chan,
     }
 
     /* execute rpmb command */
-    rc = rpmb_storage_send(proxy_rpmb,
-                           rel_write_data, req->reliable_write_size,
-                           write_data, req->write_size,
-                           read_buf, req->read_size);
+    rc = rpmb_storage_send(proxy_rpmb, rel_write_data, req->reliable_write_size,
+                           write_data, req->write_size, read_buf,
+                           req->read_size);
     if (rc) {
         trusty_error("%s: rpmb_storage_send failed: %d\n", __func__, rc);
         msg->result = STORAGE_ERR_GENERIC;
@@ -189,10 +186,10 @@ err_response:
  * @req:     address of storage message request
  * @req_len: length of resp in bytes
  */
-static int proxy_handle_req(struct trusty_ipc_chan *chan,
-                            struct storage_msg *msg, const void *req,
-                            size_t req_len)
-{
+static int proxy_handle_req(struct trusty_ipc_chan* chan,
+                            struct storage_msg* msg,
+                            const void* req,
+                            size_t req_len) {
     int rc;
 
     if (msg->flags & STORAGE_MSG_FLAG_PRE_COMMIT) {
@@ -229,8 +226,7 @@ static int proxy_handle_req(struct trusty_ipc_chan *chan,
  *
  * @chan:    proxy ipc channel
  */
-static int proxy_on_disconnect(struct trusty_ipc_chan *chan)
-{
+static int proxy_on_disconnect(struct trusty_ipc_chan* chan) {
     trusty_assert(chan);
 
     trusty_debug("%s: closed by peer\n", __func__);
@@ -243,8 +239,7 @@ static int proxy_on_disconnect(struct trusty_ipc_chan *chan)
  *
  * @chan:    proxy ipc channel
  */
-static int proxy_on_message(struct trusty_ipc_chan *chan)
-{
+static int proxy_on_message(struct trusty_ipc_chan* chan) {
     int rc;
 
     trusty_assert(chan);
@@ -269,15 +264,14 @@ static int proxy_on_message(struct trusty_ipc_chan *chan)
 }
 
 static struct trusty_ipc_ops proxy_ops = {
-    .on_message = proxy_on_message,
-    .on_disconnect = proxy_on_disconnect,
+        .on_message = proxy_on_message,
+        .on_disconnect = proxy_on_disconnect,
 };
 
 /*
  * Initialize RPMB storage proxy
  */
-int rpmb_storage_proxy_init(struct trusty_ipc_dev *dev, void *rpmb_dev)
-{
+int rpmb_storage_proxy_init(struct trusty_ipc_dev* dev, void* rpmb_dev) {
     int rc;
 
     trusty_assert(dev);
@@ -312,8 +306,7 @@ int rpmb_storage_proxy_init(struct trusty_ipc_dev *dev, void *rpmb_dev)
             trusty_error("%s: unexpected proxy channel close\n");
             return TRUSTY_ERR_CHANNEL_CLOSED;
         }
-    }
-    while (rc != TRUSTY_EVENT_NONE);
+    } while (rc != TRUSTY_EVENT_NONE);
 
     /* mark as initialized */
     initialized = true;
@@ -321,8 +314,7 @@ int rpmb_storage_proxy_init(struct trusty_ipc_dev *dev, void *rpmb_dev)
     return TRUSTY_ERR_NONE;
 }
 
-void rpmb_storage_proxy_shutdown(struct trusty_ipc_dev *dev)
-{
+void rpmb_storage_proxy_shutdown(struct trusty_ipc_dev* dev) {
     trusty_assert(initialized);
 
     /* close channel */

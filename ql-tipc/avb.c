@@ -33,23 +33,25 @@ static bool initialized;
 static int avb_tipc_version = 1;
 static struct trusty_ipc_chan avb_chan;
 
-static int avb_send_request(struct avb_message *msg, void *req, size_t req_len)
-{
+static int avb_send_request(struct avb_message* msg,
+                            void* req,
+                            size_t req_len) {
     struct trusty_ipc_iovec req_iovs[2] = {
-        { .base = msg, .len = sizeof(*msg) },
-        { .base = req, .len = req_len },
+            {.base = msg, .len = sizeof(*msg)},
+            {.base = req, .len = req_len},
     };
 
     return trusty_ipc_send(&avb_chan, req_iovs, req ? 2 : 1, true);
 }
 
-static int avb_read_response(struct avb_message *msg, uint32_t cmd, void *resp,
-                             size_t resp_len)
-{
+static int avb_read_response(struct avb_message* msg,
+                             uint32_t cmd,
+                             void* resp,
+                             size_t resp_len) {
     int rc;
     struct trusty_ipc_iovec resp_iovs[2] = {
-        { .base = msg, .len = sizeof(*msg) },
-        { .base = resp, .len = resp_len },
+            {.base = msg, .len = sizeof(*msg)},
+            {.base = resp, .len = resp_len},
     };
 
     rc = trusty_ipc_recv(&avb_chan, resp_iovs, resp ? 2 : 1, true);
@@ -76,11 +78,13 @@ static int avb_read_response(struct avb_message *msg, uint32_t cmd, void *resp,
  * @resp_size_p: pointer to the size of the response buffer. changed to the
                  actual size of the response read from the secure side
  */
-static int avb_do_tipc(uint32_t cmd, void *req, uint32_t req_size, void *resp,
-                       uint32_t *resp_size_p)
-{
+static int avb_do_tipc(uint32_t cmd,
+                       void* req,
+                       uint32_t req_size,
+                       void* resp,
+                       uint32_t* resp_size_p) {
     int rc;
-    struct avb_message msg = { .cmd = cmd };
+    struct avb_message msg = {.cmd = cmd};
 
     if (!initialized && cmd != AVB_GET_VERSION) {
         trusty_error("%s: AVB TIPC client not initialized\n", __func__);
@@ -111,8 +115,7 @@ static int avb_do_tipc(uint32_t cmd, void *req, uint32_t req_size, void *resp,
     return TRUSTY_ERR_NONE;
 }
 
-static int avb_get_version(uint32_t *version)
-{
+static int avb_get_version(uint32_t* version) {
     int rc;
     struct avb_get_version_resp resp;
     uint32_t resp_size = sizeof(resp);
@@ -123,9 +126,7 @@ static int avb_get_version(uint32_t *version)
     return rc;
 }
 
-
-int avb_tipc_init(struct trusty_ipc_dev *dev)
-{
+int avb_tipc_init(struct trusty_ipc_dev* dev) {
     int rc;
     uint32_t version = 0;
 
@@ -160,8 +161,7 @@ int avb_tipc_init(struct trusty_ipc_dev *dev)
     return TRUSTY_ERR_NONE;
 }
 
-void avb_tipc_shutdown(struct trusty_ipc_dev *dev)
-{
+void avb_tipc_shutdown(struct trusty_ipc_dev* dev) {
     if (!initialized)
         return; /* nothing to do */
 
@@ -171,24 +171,21 @@ void avb_tipc_shutdown(struct trusty_ipc_dev *dev)
     initialized = false;
 }
 
-int trusty_read_rollback_index(uint32_t slot, uint64_t *value)
-{
+int trusty_read_rollback_index(uint32_t slot, uint64_t* value) {
     int rc;
-    struct avb_rollback_req req = { .slot = slot, .value = 0 };
+    struct avb_rollback_req req = {.slot = slot, .value = 0};
     struct avb_rollback_resp resp;
     uint32_t resp_size = sizeof(resp);
 
-    rc = avb_do_tipc(READ_ROLLBACK_INDEX, &req, sizeof(req), &resp,
-                     &resp_size);
+    rc = avb_do_tipc(READ_ROLLBACK_INDEX, &req, sizeof(req), &resp, &resp_size);
 
     *value = resp.value;
     return rc;
 }
 
-int trusty_write_rollback_index(uint32_t slot, uint64_t value)
-{
+int trusty_write_rollback_index(uint32_t slot, uint64_t value) {
     int rc;
-    struct avb_rollback_req req = { .slot = slot, .value = value };
+    struct avb_rollback_req req = {.slot = slot, .value = value};
     struct avb_rollback_resp resp;
     uint32_t resp_size = sizeof(resp);
 
@@ -197,8 +194,7 @@ int trusty_write_rollback_index(uint32_t slot, uint64_t value)
     return rc;
 }
 
-int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size)
-{
+int trusty_read_permanent_attributes(uint8_t* attributes, uint32_t size) {
     uint8_t resp_buf[AVB_MAX_BUFFER_LENGTH];
     uint32_t resp_size = AVB_MAX_BUFFER_LENGTH;
     int rc = avb_do_tipc(READ_PERMANENT_ATTRIBUTES, NULL, 0, resp_buf,
@@ -214,26 +210,21 @@ int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size)
     return rc;
 }
 
-int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size)
-{
+int trusty_write_permanent_attributes(uint8_t* attributes, uint32_t size) {
     return avb_do_tipc(WRITE_PERMANENT_ATTRIBUTES, attributes, size, NULL,
                        NULL);
 }
 
-int trusty_read_lock_state(uint8_t *lock_state)
-{
+int trusty_read_lock_state(uint8_t* lock_state) {
     uint32_t resp_size = sizeof(*lock_state);
-    return avb_do_tipc(READ_LOCK_STATE, NULL, 0, lock_state,
-                       &resp_size);
+    return avb_do_tipc(READ_LOCK_STATE, NULL, 0, lock_state, &resp_size);
 }
 
-int trusty_write_lock_state(uint8_t lock_state)
-{
+int trusty_write_lock_state(uint8_t lock_state) {
     return avb_do_tipc(WRITE_LOCK_STATE, &lock_state, sizeof(lock_state), NULL,
                        NULL);
 }
 
-int trusty_lock_boot_state(void)
-{
+int trusty_lock_boot_state(void) {
     return avb_do_tipc(LOCK_BOOT_STATE, NULL, 0, NULL, NULL);
 }

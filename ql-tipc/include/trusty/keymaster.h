@@ -25,23 +25,23 @@
 #ifndef TRUSTY_KEYMASTER_H_
 #define TRUSTY_KEYMASTER_H_
 
+#include <interface/keymaster/keymaster.h>
 #include <trusty/sysdeps.h>
 #include <trusty/trusty_ipc.h>
-#include <interface/keymaster/keymaster.h>
 
 /*
  * Initialize Keymaster TIPC client. Returns one of trusty_err.
  *
  * @dev: initialized with trusty_ipc_dev_create
  */
-int km_tipc_init(struct trusty_ipc_dev *dev);
+int km_tipc_init(struct trusty_ipc_dev* dev);
 
 /*
  * Shutdown Keymaster TIPC client.
  *
  * @dev: initialized with trusty_ipc_dev_create
  */
-void km_tipc_shutdown(struct trusty_ipc_dev *dev);
+void km_tipc_shutdown(struct trusty_ipc_dev* dev);
 
 /*
  * Set Keymaster boot parameters. Returns one of trusty_err.
@@ -56,12 +56,13 @@ void km_tipc_shutdown(struct trusty_ipc_dev *dev);
  *                      May be NULL if not computed.
  * @verified_boot_hash_size: size of verified_boot_hash
  */
-int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
+int trusty_set_boot_params(uint32_t os_version,
+                           uint32_t os_patchlevel,
                            keymaster_verified_boot_t verified_boot_state,
                            bool device_locked,
-                           const uint8_t *verified_boot_key_hash,
+                           const uint8_t* verified_boot_key_hash,
                            uint32_t verified_boot_key_hash_size,
-                           const uint8_t *verified_boot_hash,
+                           const uint8_t* verified_boot_hash,
                            uint32_t verified_boot_hash_size);
 
 /*
@@ -71,7 +72,8 @@ int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
  * @key_size: size of key in bytes
  * @algorithm: one of KM_ALGORITHM_RSA or KM_ALGORITHM_EC
  */
-int trusty_set_attestation_key(const uint8_t *key, uint32_t key_size,
+int trusty_set_attestation_key(const uint8_t* key,
+                               uint32_t key_size,
                                keymaster_algorithm_t algorithm);
 
 /*
@@ -82,7 +84,7 @@ int trusty_set_attestation_key(const uint8_t *key, uint32_t key_size,
  * @cert_size: size of certificate in bytes
  * @algorithm: one of KM_ALGORITHM_RSA or KM_ALGORITHM_EC
  */
-int trusty_append_attestation_cert_chain(const uint8_t *cert,
+int trusty_append_attestation_cert_chain(const uint8_t* cert,
                                          uint32_t cert_size,
                                          keymaster_algorithm_t algorithm);
 /*
@@ -95,7 +97,7 @@ int trusty_append_attestation_cert_chain(const uint8_t *cert,
  * @ca_request_p: location of newly allocated CA Request message
  * @ca_request_size_p: location of size of the CA Request message
  */
-int trusty_atap_get_ca_request(const uint8_t *operation_start,
+int trusty_atap_get_ca_request(const uint8_t* operation_start,
                                uint32_t operation_start_size,
                                uint8_t** ca_request_p,
                                uint32_t* ca_request_size_p);
@@ -105,7 +107,7 @@ int trusty_atap_get_ca_request(const uint8_t *operation_start,
  * @ca_response: CA Response message
  * @ca_response_size: size of ca_response
  */
-int trusty_atap_set_ca_response(const uint8_t *ca_response,
+int trusty_atap_set_ca_response(const uint8_t* ca_response,
                                 uint32_t ca_response_size);
 
 /*
@@ -115,6 +117,6 @@ int trusty_atap_set_ca_response(const uint8_t *ca_response,
  *
  * @uuid_p: location of newly allocated UUID c-string
  */
-int trusty_atap_read_uuid_str(char **uuid_p);
+int trusty_atap_read_uuid_str(char** uuid_p);
 
 #endif /* TRUSTY_KEYMASTER_H_ */

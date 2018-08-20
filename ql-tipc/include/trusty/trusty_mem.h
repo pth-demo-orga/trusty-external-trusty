@@ -36,6 +36,6 @@
  * Returns 0 on success and -1 on failure
  */
 
-int trusty_encode_page_info(struct ns_mem_page_info *inf, void *va);
+int trusty_encode_page_info(struct ns_mem_page_info* inf, void* va);
 
 #endif /* TRUSTY_TRUSTY_MEM_H_ */

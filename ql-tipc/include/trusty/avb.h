@@ -25,22 +25,22 @@
 #ifndef TRUSTY_AVB_H_
 #define TRUSTY_AVB_H_
 
+#include <interface/avb/avb.h>
 #include <trusty/sysdeps.h>
 #include <trusty/trusty_ipc.h>
-#include <interface/avb/avb.h>
 
 /*
  * Initialize AVB TIPC client. Returns one of trusty_err.
  *
  * @dev: initialized with trusty_ipc_dev_create
  */
-int avb_tipc_init(struct trusty_ipc_dev *dev);
+int avb_tipc_init(struct trusty_ipc_dev* dev);
 /*
  * Shutdown AVB TIPC client.
  *
  * @dev: initialized with trusty_ipc_dev_create
  */
-void avb_tipc_shutdown(struct trusty_ipc_dev *dev);
+void avb_tipc_shutdown(struct trusty_ipc_dev* dev);
 /*
  * Send request to secure side to read rollback index.
  * Returns one of trusty_err.
@@ -48,7 +48,7 @@ void avb_tipc_shutdown(struct trusty_ipc_dev *dev);
  * @slot:    rollback index slot
  * @value:   rollback index value stored here
  */
-int trusty_read_rollback_index(uint32_t slot, uint64_t *value);
+int trusty_read_rollback_index(uint32_t slot, uint64_t* value);
 /*
  * Send request to secure side to write rollback index
  * Returns one of trusty_err.
@@ -69,20 +69,20 @@ int trusty_write_rollback_index(uint32_t slot, uint64_t value);
  * @attributes:  caller allocated buffer
  * @size:        size of |attributes|
  */
-int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size);
+int trusty_read_permanent_attributes(uint8_t* attributes, uint32_t size);
 /*
  * Send request to secure side to write permanent attributes. Permanent
  * attributes can only be written to storage once.
  *
  * Returns one of trusty_err.
  */
-int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size);
+int trusty_write_permanent_attributes(uint8_t* attributes, uint32_t size);
 /*
  * Send request to secure side to read device lock state from RPMB.
  *
  * Returns one of trusty_err.
  */
-int trusty_read_lock_state(uint8_t *lock_state);
+int trusty_read_lock_state(uint8_t* lock_state);
 /*
  * Send request to secure side to write device lock state to RPMB. If the lock
  * state is changed, all rollback index data will be cleared.

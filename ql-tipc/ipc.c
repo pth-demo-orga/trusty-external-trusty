@@ -27,32 +27,28 @@
 
 #define LOCAL_LOG 0
 
-static int sync_ipc_on_connect_complete(struct trusty_ipc_chan *chan)
-{
+static int sync_ipc_on_connect_complete(struct trusty_ipc_chan* chan) {
     trusty_assert(chan);
 
     chan->complete = 1;
     return TRUSTY_EVENT_HANDLED;
 }
 
-static int sync_ipc_on_message(struct trusty_ipc_chan *chan)
-{
+static int sync_ipc_on_message(struct trusty_ipc_chan* chan) {
     trusty_assert(chan);
 
     chan->complete = 1;
     return TRUSTY_EVENT_HANDLED;
 }
 
-static int sync_ipc_on_disconnect(struct trusty_ipc_chan *chan)
-{
+static int sync_ipc_on_disconnect(struct trusty_ipc_chan* chan) {
     trusty_assert(chan);
 
     chan->complete = TRUSTY_ERR_CHANNEL_CLOSED;
     return TRUSTY_EVENT_HANDLED;
 }
 
-static int wait_for_complete(struct trusty_ipc_chan *chan)
-{
+static int wait_for_complete(struct trusty_ipc_chan* chan) {
     int rc;
 
     chan->complete = 0;
@@ -71,34 +67,30 @@ static int wait_for_complete(struct trusty_ipc_chan *chan)
     return chan->complete;
 }
 
-static int wait_for_connect(struct trusty_ipc_chan *chan)
-{
+static int wait_for_connect(struct trusty_ipc_chan* chan) {
     trusty_debug("%s: chan %x: waiting for connect\n", __func__,
                  (int)chan->handle);
     return wait_for_complete(chan);
 }
 
-static int wait_for_send(struct trusty_ipc_chan *chan)
-{
+static int wait_for_send(struct trusty_ipc_chan* chan) {
     trusty_debug("%s: chan %d: waiting for send\n", __func__, chan->handle);
     return wait_for_complete(chan);
 }
 
-static int wait_for_reply(struct trusty_ipc_chan *chan)
-{
+static int wait_for_reply(struct trusty_ipc_chan* chan) {
     trusty_debug("%s: chan %d: waiting for reply\n", __func__, chan->handle);
     return wait_for_complete(chan);
 }
 
 static struct trusty_ipc_ops sync_ipc_ops = {
-    .on_connect_complete = sync_ipc_on_connect_complete,
-    .on_message = sync_ipc_on_message,
-    .on_disconnect = sync_ipc_on_disconnect,
+        .on_connect_complete = sync_ipc_on_connect_complete,
+        .on_message = sync_ipc_on_message,
+        .on_disconnect = sync_ipc_on_disconnect,
 };
 
-void trusty_ipc_chan_init(struct trusty_ipc_chan *chan,
-                          struct trusty_ipc_dev *dev)
-{
+void trusty_ipc_chan_init(struct trusty_ipc_chan* chan,
+                          struct trusty_ipc_dev* dev) {
     trusty_assert(chan);
     trusty_assert(dev);
 
@@ -110,9 +102,9 @@ void trusty_ipc_chan_init(struct trusty_ipc_chan *chan,
     chan->ops_ctx = chan;
 }
 
-int trusty_ipc_connect(struct trusty_ipc_chan *chan, const char *port,
-                       bool wait)
-{
+int trusty_ipc_connect(struct trusty_ipc_chan* chan,
+                       const char* port,
+                       bool wait) {
     int rc;
 
     trusty_assert(chan);
@@ -140,8 +132,7 @@ int trusty_ipc_connect(struct trusty_ipc_chan *chan, const char *port,
     return rc;
 }
 
-int trusty_ipc_close(struct trusty_ipc_chan *chan)
-{
+int trusty_ipc_close(struct trusty_ipc_chan* chan) {
     int rc;
 
     trusty_assert(chan);
@@ -152,10 +143,10 @@ int trusty_ipc_close(struct trusty_ipc_chan *chan)
     return rc;
 }
 
-int trusty_ipc_send(struct trusty_ipc_chan *chan,
-                    const struct trusty_ipc_iovec *iovs, size_t iovs_cnt,
-                    bool wait)
-{
+int trusty_ipc_send(struct trusty_ipc_chan* chan,
+                    const struct trusty_ipc_iovec* iovs,
+                    size_t iovs_cnt,
+                    bool wait) {
     int rc;
 
     trusty_assert(chan);
@@ -177,10 +168,10 @@ Again:
     return rc;
 }
 
-int trusty_ipc_recv(struct trusty_ipc_chan *chan,
-                    const struct trusty_ipc_iovec *iovs, size_t iovs_cnt,
-                    bool wait)
-{
+int trusty_ipc_recv(struct trusty_ipc_chan* chan,
+                    const struct trusty_ipc_iovec* iovs,
+                    size_t iovs_cnt,
+                    bool wait) {
     int rc;
     trusty_assert(chan);
     trusty_assert(chan->dev);
@@ -201,11 +192,10 @@ int trusty_ipc_recv(struct trusty_ipc_chan *chan,
     return rc;
 }
 
-int trusty_ipc_poll_for_event(struct trusty_ipc_dev *ipc_dev)
-{
+int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
     int rc;
     struct trusty_ipc_event evt;
-    struct trusty_ipc_chan *chan;
+    struct trusty_ipc_chan* chan;
 
     trusty_assert(dev);
 
@@ -221,7 +211,7 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev *ipc_dev)
         return TRUSTY_EVENT_NONE;
     }
 
-    chan = (struct trusty_ipc_chan *)(uintptr_t)evt.cookie;
+    chan = (struct trusty_ipc_chan*)(uintptr_t)evt.cookie;
     trusty_assert(chan && chan->ops);
 
     /* check if we have raw event handler */

@@ -59,19 +59,19 @@ struct trusty_dev;
  *
  * @dev: Trusty device initialized with trusty_dev_init
  */
-void trusty_lock(struct trusty_dev *dev);
-void trusty_unlock(struct trusty_dev *dev);
+void trusty_lock(struct trusty_dev* dev);
+void trusty_unlock(struct trusty_dev* dev);
 /*
  * Disable/enable IRQ interrupts and save/restore @state
  */
-void trusty_local_irq_disable(unsigned long *state);
-void trusty_local_irq_restore(unsigned long *state);
+void trusty_local_irq_disable(unsigned long* state);
+void trusty_local_irq_restore(unsigned long* state);
 /*
  * Put in standby state waiting for interrupt.
  *
  * @dev: Trusty device initialized with trusty_dev_init
  */
-void trusty_idle(struct trusty_dev *dev);
+void trusty_idle(struct trusty_dev* dev);
 /*
  * Aborts the program or reboots the device.
  */
@@ -80,44 +80,44 @@ void trusty_abort(void) TRUSTY_ATTR_NO_RETURN;
  * Print a formatted string. @format must point to a NULL-terminated string, and
  * is followed by arguments to be printed.
  */
-void trusty_printf(const char *format, ...);
+void trusty_printf(const char* format, ...);
 /*
  * Copy @n bytes from @src to @dest.
  */
-void *trusty_memcpy(void *dest, const void *src, size_t n);
+void* trusty_memcpy(void* dest, const void* src, size_t n);
 /*
  * Set @n bytes starting at @dest to @c. Returns @dest.
  */
-void *trusty_memset(void *dest, const int c, size_t n);
+void* trusty_memset(void* dest, const int c, size_t n);
 /*
  * Copy string from @src to @dest, including the terminating NULL byte.
  *
  * The size of the array at @dest should be long enough to contain the string
  * at @src, and should not overlap in memory with @src.
  */
-char *trusty_strcpy(char *dest, const char *src);
+char* trusty_strcpy(char* dest, const char* src);
 /*
  * Returns the length of @str, excluding the terminating NULL byte.
  */
-size_t trusty_strlen(const char *str);
+size_t trusty_strlen(const char* str);
 /*
  * Allocate @n elements of size @size. Initializes memory to 0, returns pointer
  * to it.
  */
-void *trusty_calloc(size_t n, size_t size) TRUSTY_ATTR_WARN_UNUSED_RESULT;
+void* trusty_calloc(size_t n, size_t size) TRUSTY_ATTR_WARN_UNUSED_RESULT;
 /*
  * Free memory at @addr allocated with trusty_calloc.
  */
-void trusty_free(void *addr);
+void trusty_free(void* addr);
 /*
  * Allocate @count contiguous pages to be shared with secure side.
  *
  * Returns:   vaddr of allocated memory
  */
-void *trusty_alloc_pages(unsigned count) TRUSTY_ATTR_WARN_UNUSED_RESULT;
+void* trusty_alloc_pages(unsigned count) TRUSTY_ATTR_WARN_UNUSED_RESULT;
 /*
  * Free @count pages at @vaddr allocated by trusty_alloc_pages
  */
-void trusty_free_pages(void *vaddr, unsigned count);
+void trusty_free_pages(void* vaddr, unsigned count);
 
 #endif /* TRUSTY_SYSDEPS_H_ */

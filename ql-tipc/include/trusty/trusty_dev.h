@@ -34,7 +34,7 @@
  * @api_version: TIPC version
  */
 struct trusty_dev {
-    void *priv_data;
+    void* priv_data;
     uint32_t api_version;
 };
 
@@ -42,12 +42,12 @@ struct trusty_dev {
  * Initializes @dev with @priv, and gets the API version by calling
  * into Trusty. Returns negative on error.
  */
-int trusty_dev_init(struct trusty_dev *dev, void *priv);
+int trusty_dev_init(struct trusty_dev* dev, void* priv);
 
 /*
  * Cleans up anything related to @dev. Returns negative on error.
  */
-int trusty_dev_shutdown(struct trusty_dev *dev);
+int trusty_dev_shutdown(struct trusty_dev* dev);
 
 /*
  * Invokes creation of queueless Trusty IPC device on the secure side.
@@ -57,7 +57,8 @@ int trusty_dev_shutdown(struct trusty_dev *dev);
  * @buf:      physical address info of buffer to share with Trusty
  * @buf_size: size of @buf
  */
-int trusty_dev_init_ipc(struct trusty_dev *dev, struct ns_mem_page_info *buf,
+int trusty_dev_init_ipc(struct trusty_dev* dev,
+                        struct ns_mem_page_info* buf,
                         uint32_t buf_size);
 /*
  * Invokes execution of command on the secure side.
@@ -66,7 +67,8 @@ int trusty_dev_init_ipc(struct trusty_dev *dev, struct ns_mem_page_info *buf,
  * @buf:      physical address info of shared buffer containing command
  * @buf_size: size of command data
  */
-int trusty_dev_exec_ipc(struct trusty_dev *dev, struct ns_mem_page_info *buf,
+int trusty_dev_exec_ipc(struct trusty_dev* dev,
+                        struct ns_mem_page_info* buf,
                         uint32_t buf_size);
 /*
  * Invokes deletion of queueless Trusty IPC device on the secure side.
@@ -76,7 +78,8 @@ int trusty_dev_exec_ipc(struct trusty_dev *dev, struct ns_mem_page_info *buf,
  * @buf:      physical address info of shared buffer
  * @buf_size: size of @buf
  */
-int trusty_dev_shutdown_ipc(struct trusty_dev *dev,
-                            struct ns_mem_page_info *buf, uint32_t buf_size);
+int trusty_dev_shutdown_ipc(struct trusty_dev* dev,
+                            struct ns_mem_page_info* buf,
+                            uint32_t buf_size);
 
 #endif /* TRUSTY_TRUSTY_DEV_H_ */

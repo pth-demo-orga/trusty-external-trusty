@@ -28,39 +28,30 @@
 #include <linux/string.h>
 #include <malloc.h>
 
-extern int trusty_encode_page_info(struct ns_mem_page_info *page_info,
-                                   void *vaddr);
+extern int trusty_encode_page_info(struct ns_mem_page_info* page_info,
+                                   void* vaddr);
 
-void trusty_lock(struct trusty_dev *dev)
-{
-}
-void trusty_unlock(struct trusty_dev *dev)
-{
-}
+void trusty_lock(struct trusty_dev* dev) {}
+void trusty_unlock(struct trusty_dev* dev) {}
 
-void trusty_local_irq_disable(unsigned long *state)
-{
+void trusty_local_irq_disable(unsigned long* state) {
     disable_interrupts();
 }
 
-void trusty_local_irq_restore(unsigned long *state)
-{
+void trusty_local_irq_restore(unsigned long* state) {
     enable_interrupts();
 }
 
-void trusty_idle(struct trusty_dev *dev)
-{
+void trusty_idle(struct trusty_dev* dev) {
     wfi();
 }
 
-void trusty_abort(void)
-{
+void trusty_abort(void) {
     do_reset(NULL, 0, 0, NULL);
     __builtin_unreachable();
 }
 
-void trusty_printf(const char *format, ...)
-{
+void trusty_printf(const char* format, ...) {
     va_list ap;
 
     va_start(ap, format);
@@ -68,44 +59,36 @@ void trusty_printf(const char *format, ...)
     va_end(ap);
 }
 
-void *trusty_memcpy(void *dest, const void *src, size_t n)
-{
+void* trusty_memcpy(void* dest, const void* src, size_t n) {
     return memcpy(dest, src, n);
 }
 
-void *trusty_memset(void *dest, const int c, size_t n)
-{
+void* trusty_memset(void* dest, const int c, size_t n) {
     return memset(dest, c, n);
 }
 
-char *trusty_strcpy(char *dest, const char *src)
-{
+char* trusty_strcpy(char* dest, const char* src) {
     return strcpy(dest, src);
 }
 
-size_t trusty_strlen(const char *str)
-{
+size_t trusty_strlen(const char* str) {
     return strlen(str);
 }
 
-void *trusty_calloc(size_t n, size_t size)
-{
+void* trusty_calloc(size_t n, size_t size) {
     return calloc(n, size);
 }
 
-void trusty_free(void *addr)
-{
+void trusty_free(void* addr) {
     if (addr)
         free(addr);
 }
 
-void *trusty_alloc_pages(unsigned count)
-{
+void* trusty_alloc_pages(unsigned count) {
     return memalign(PAGE_SIZE, count * PAGE_SIZE);
 }
 
-void trusty_free_pages(void *va, unsigned count)
-{
+void trusty_free_pages(void* va, unsigned count) {
     if (va)
         free(va);
 }

@@ -24,14 +24,13 @@
 
 #include <trusty/trusty_mem.h>
 
-#define NS_PTE_MAIR_SHIFT                  48
-#define NS_MAIR_NORMAL_UNCACHED            0x44 /* uncached */
+#define NS_PTE_MAIR_SHIFT 48
+#define NS_MAIR_NORMAL_UNCACHED 0x44 /* uncached */
 
-int trusty_encode_page_info(struct ns_mem_page_info *inf, void *va)
-{
+int trusty_encode_page_info(struct ns_mem_page_info* inf, void* va) {
     /* Always report normal uncached memory as we are running without the MMU */
-    inf->attr = (uint64_t)va
-                | ((uint64_t)NS_MAIR_NORMAL_UNCACHED << NS_PTE_MAIR_SHIFT);
+    inf->attr = (uint64_t)va |
+                ((uint64_t)NS_MAIR_NORMAL_UNCACHED << NS_PTE_MAIR_SHIFT);
 
     return 0;
 }

@@ -30,25 +30,25 @@
 #include <memalign.h>
 #include <mmc.h>
 
-void *rpmb_storage_get_ctx(void)
-{
+void* rpmb_storage_get_ctx(void) {
     /* Unused for U-boot */
     return NULL;
 }
 
-void rpmb_storage_put_ctx(void *dev)
-{
-}
+void rpmb_storage_put_ctx(void* dev) {}
 
-int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
-                      size_t rel_write_size, const void *write_data,
-                      size_t write_size, void *read_buf, size_t read_size)
-{
+int rpmb_storage_send(void* rpmb_dev,
+                      const void* rel_write_data,
+                      size_t rel_write_size,
+                      const void* write_data,
+                      size_t write_size,
+                      void* read_buf,
+                      size_t read_size) {
     ALLOC_CACHE_ALIGN_BUFFER(uint8_t, rpmb_rel_write_data, rel_write_size);
     ALLOC_CACHE_ALIGN_BUFFER(uint8_t, rpmb_write_data, write_size);
     ALLOC_CACHE_ALIGN_BUFFER(uint8_t, rpmb_read_data, read_size);
     int ret = TRUSTY_ERR_NONE;
-    struct mmc *mmc = find_mmc_device(mmc_get_env_dev());
+    struct mmc* mmc = find_mmc_device(mmc_get_env_dev());
     char original_part = mmc->block_dev.hwpart;
 
     /* Switch to RPMB partition */
@@ -65,14 +65,13 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
     if (rel_write_size) {
         if (rel_write_size % MMC_BLOCK_SIZE) {
             trusty_error(
-                "rel_write_size is not a multiple of MMC_BLOCK_SIZE: %d\n",
-                 rel_write_size);
+                    "rel_write_size is not a multiple of MMC_BLOCK_SIZE: %d\n",
+                    rel_write_size);
             ret = TRUSTY_ERR_INVALID_ARGS;
             goto end;
         }
         trusty_memcpy(rpmb_rel_write_data, rel_write_data, rel_write_size);
-        ret = mmc_rpmb_request(mmc,
-                               (const struct s_rpmb *)rpmb_rel_write_data,
+        ret = mmc_rpmb_request(mmc, (const struct s_rpmb*)rpmb_rel_write_data,
                                rel_write_size / MMC_BLOCK_SIZE, true);
         if (ret) {
             trusty_error("failed to execute rpmb reliable write\n");
@@ -87,7 +86,7 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
             goto end;
         }
         trusty_memcpy(rpmb_write_data, write_data, write_size);
-        ret = mmc_rpmb_request(mmc, (const struct s_rpmb *)rpmb_write_data,
+        ret = mmc_rpmb_request(mmc, (const struct s_rpmb*)rpmb_write_data,
                                write_size / MMC_BLOCK_SIZE, false);
         if (ret) {
             trusty_error("failed to execute rpmb write\n");
@@ -101,9 +100,9 @@ int rpmb_storage_send(void *rpmb_dev, const void *rel_write_data,
             ret = TRUSTY_ERR_INVALID_ARGS;
             goto end;
         }
-        ret = mmc_rpmb_response(mmc, (struct s_rpmb *)rpmb_read_data,
+        ret = mmc_rpmb_response(mmc, (struct s_rpmb*)rpmb_read_data,
                                 read_size / MMC_BLOCK_SIZE, 0);
-        trusty_memcpy((void *)read_buf, rpmb_read_data, read_size);
+        trusty_memcpy((void*)read_buf, rpmb_read_data, read_size);
         if (ret < 0) {
             trusty_error("failed to execute rpmb read\n");
         }

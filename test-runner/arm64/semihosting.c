@@ -43,21 +43,19 @@ uint64_t semihosting(uint32_t op, uint64_t param);
 
 #define SYS_WRITE (0x05)
 
-void host_exit(uint32_t code)
-{
+void host_exit(uint32_t code) {
     uint64_t params[2] = {
-        ADP_Stopped_ApplicationExit,
-        code,
+            ADP_Stopped_ApplicationExit,
+            code,
     };
     semihosting(SYS_EXIT, (uint64_t)params);
 }
 
-size_t host_get_cmdline(char *strbuf, size_t strbufsize)
-{
+size_t host_get_cmdline(char* strbuf, size_t strbufsize) {
     int ret;
     uint64_t params[2] = {
-        (uint64_t)strbuf,
-        strbufsize,
+            (uint64_t)strbuf,
+            strbufsize,
     };
     ret = semihosting(SYS_GET_CMDLINE, (uint64_t)params);
     if (ret)
@@ -65,22 +63,20 @@ size_t host_get_cmdline(char *strbuf, size_t strbufsize)
     return params[1];
 }
 
-int host_open(const char *path, uint32_t mode)
-{
+int host_open(const char* path, uint32_t mode) {
     uint64_t params[3] = {
-        (uint64_t)path,
-        mode,
-        trusty_strlen(path),
+            (uint64_t)path,
+            mode,
+            trusty_strlen(path),
     };
     return semihosting(SYS_OPEN, (uint64_t)params);
 }
 
-int host_write(int handle, const void *data, size_t size)
-{
+int host_write(int handle, const void* data, size_t size) {
     uint64_t params[3] = {
-        handle,
-        (uint64_t)data,
-        size,
+            handle,
+            (uint64_t)data,
+            size,
     };
     return semihosting(SYS_WRITE, (uint64_t)params);
 }

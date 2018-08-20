@@ -27,8 +27,8 @@
 
 /* 48-bit physical address bits 47:12 */
 
-#define NS_PTE_PHYSADDR_SHIFT      12
-#define NS_PTE_PHYSADDR(pte)       ((pte) & 0xFFFFFFFFF000ULL)
+#define NS_PTE_PHYSADDR_SHIFT 12
+#define NS_PTE_PHYSADDR(pte) ((pte)&0xFFFFFFFFF000ULL)
 
 /* Access permissions bits 7:6
  *      EL0     EL1
@@ -37,36 +37,44 @@
  * 10   None    RO
  * 11   RO      RO
  */
-#define NS_PTE_AP_SHIFT                    6
-#define NS_PTE_AP_MASK                     (0x3 << NS_PTE_AP_SHIFT)
+#define NS_PTE_AP_SHIFT 6
+#define NS_PTE_AP_MASK (0x3 << NS_PTE_AP_SHIFT)
 
 /* Memory type and cache attributes bits 55:48 */
-#define NS_PTE_MAIR_SHIFT                  48
-#define NS_PTE_MAIR_MASK                   (0x00FFULL << NS_PTE_MAIR_SHIFT)
+#define NS_PTE_MAIR_SHIFT 48
+#define NS_PTE_MAIR_MASK (0x00FFULL << NS_PTE_MAIR_SHIFT)
 
-#define NS_PTE_MAIR_INNER_SHIFT            48
-#define NS_PTE_MAIR_INNER_MASK             (0x000FULL << NS_PTE_MAIR_INNER_SHIFT)
+#define NS_PTE_MAIR_INNER_SHIFT 48
+#define NS_PTE_MAIR_INNER_MASK (0x000FULL << NS_PTE_MAIR_INNER_SHIFT)
 
-#define NS_PTE_MAIR_OUTER_SHIFT            52
-#define NS_PTE_MAIR_OUTER_MASK             (0x000FULL << NS_PTE_MAIR_OUTER_SHIFT)
+#define NS_PTE_MAIR_OUTER_SHIFT 52
+#define NS_PTE_MAIR_OUTER_MASK (0x000FULL << NS_PTE_MAIR_OUTER_SHIFT)
 
 /* Normal memory */
-#define NS_MAIR_NORMAL_CACHED_WB_RWA       0xFF /* inner and outer write back read/write allocate */
-#define NS_MAIR_NORMAL_CACHED_WT_RA        0xAA /* inner and outer write through read allocate */
-#define NS_MAIR_NORMAL_CACHED_WB_RA        0xEE /* inner and outer write back, read allocate */
-#define NS_MAIR_NORMAL_UNCACHED            0x44 /* uncached */
+
+/* inner and outer write back read/write allocate */
+#define NS_MAIR_NORMAL_CACHED_WB_RWA 0xFF
+/* inner and outer write through read allocate */
+#define NS_MAIR_NORMAL_CACHED_WT_RA 0xAA
+/* inner and outer write back, read allocate */
+#define NS_MAIR_NORMAL_CACHED_WB_RA 0xEE
+/* uncached */
+#define NS_MAIR_NORMAL_UNCACHED 0x44
 
 /* Device memory */
-#define NS_MAIR_DEVICE_STRONGLY_ORDERED    0x00 /* nGnRnE (strongly ordered) */
-#define NS_MAIR_DEVICE                     0x04 /* nGnRE  (device) */
-#define NS_MAIR_DEVICE_GRE                 0x0C /* GRE */
+/* nGnRnE (strongly ordered) */
+#define NS_MAIR_DEVICE_STRONGLY_ORDERED 0x00
+/* nGnRE  (device) */
+#define NS_MAIR_DEVICE 0x04
+/* GRE */
+#define NS_MAIR_DEVICE_GRE 0x0C
 
 /* shareable attributes bits 9:8 */
-#define NS_PTE_SHAREABLE_SHIFT             8
+#define NS_PTE_SHAREABLE_SHIFT 8
 
-#define NS_NON_SHAREABLE                   0x0
-#define NS_OUTER_SHAREABLE                 0x2
-#define NS_INNER_SHAREABLE                 0x3
+#define NS_NON_SHAREABLE 0x0
+#define NS_OUTER_SHAREABLE 0x2
+#define NS_INNER_SHAREABLE 0x3
 
 typedef uintptr_t addr_t;
 typedef uintptr_t vaddr_t;
@@ -74,46 +82,42 @@ typedef uintptr_t paddr_t;
 
 #if NS_ARCH_ARM64
 
-#define  PAR_F  (0x1 <<  0)
+#define PAR_F (0x1 << 0)
 
 /*
  * ARM64
  */
 
 /* Note: this will crash if called from user space */
-static void arm64_write_ATS1ExW(uint64_t vaddr)
-{
+static void arm64_write_ATS1ExW(uint64_t vaddr) {
     uint64_t _current_el;
 
-    __asm__ volatile("mrs %0, CurrentEL" : "=r" (_current_el));
+    __asm__ volatile("mrs %0, CurrentEL" : "=r"(_current_el));
 
     _current_el = (_current_el >> 2) & 0x3;
     switch (_current_el) {
     case 0x1:
-        __asm__ volatile("at S1E1W, %0" :: "r" (vaddr));
+        __asm__ volatile("at S1E1W, %0" ::"r"(vaddr));
         break;
     case 0x2:
-        __asm__ volatile("at S1E2W, %0" :: "r" (vaddr));
+        __asm__ volatile("at S1E2W, %0" ::"r"(vaddr));
         break;
     case 0x3:
     default:
-        trusty_fatal("Unsupported execution state: EL%u\n", _current_el );
+        trusty_fatal("Unsupported execution state: EL%u\n", _current_el);
         break;
     }
 
     __asm__ volatile("isb" ::: "memory");
 }
 
-static uint64_t arm64_read_par64(void)
-{
+static uint64_t arm64_read_par64(void) {
     uint64_t _val;
-    __asm__ volatile("mrs %0, par_el1" : "=r" (_val));
+    __asm__ volatile("mrs %0, par_el1" : "=r"(_val));
     return _val;
 }
 
-
-static uint64_t va2par(vaddr_t va)
-{
+static uint64_t va2par(vaddr_t va) {
     uint64_t par;
     unsigned long irq_state;
 
@@ -125,8 +129,7 @@ static uint64_t va2par(vaddr_t va)
     return par;
 }
 
-static uint64_t par2attr(uint64_t par)
-{
+static uint64_t par2attr(uint64_t par) {
     uint64_t attr;
 
     /* set phys address */
@@ -146,19 +149,18 @@ static uint64_t par2attr(uint64_t par)
 
 #else
 
-#define  PAR_F     (0x1 <<  0)
-#define  PAR_SS    (0x1 <<  1)
-#define  PAR_SH    (0x1 <<  7)
-#define  PAR_NOS   (0x1 << 10)
-#define  PAR_LPAE  (0x1 << 11)
+#define PAR_F (0x1 << 0)
+#define PAR_SS (0x1 << 1)
+#define PAR_SH (0x1 << 7)
+#define PAR_NOS (0x1 << 10)
+#define PAR_LPAE (0x1 << 11)
 
 /*
  * ARM32
  */
 
 /* Note: this will crash if called from user space */
-static void arm_write_ATS1xW(uint64_t vaddr)
-{
+static void arm_write_ATS1xW(uint64_t vaddr) {
     uint32_t _cpsr;
 
     __asm__ volatile("mrs %0, cpsr" : "=r"(_cpsr));
@@ -169,42 +171,40 @@ static void arm_write_ATS1xW(uint64_t vaddr)
         __asm__ volatile("mcr    p15, 0, %0, c7, c8, 1" : : "r"(vaddr));
 }
 
-static uint64_t arm_read_par64(void)
-{
+static uint64_t arm_read_par64(void) {
     uint32_t lower, higher;
 
     __asm__ volatile(
-        "mrc    p15, 0, %0, c7, c4, 0   \n"
-        "tst    %0, #(1 << 11)      @ LPAE / long desc format\n"
-        "moveq  %1, #0          \n"
-        "mrrcne p15, 0, %0, %1, c7  \n"
-         :"=r"(lower), "=r"(higher) : :
-    );
+            "mrc    p15, 0, %0, c7, c4, 0   \n"
+            "tst    %0, #(1 << 11)      @ LPAE / long desc format\n"
+            "moveq  %1, #0          \n"
+            "mrrcne p15, 0, %0, %1, c7  \n"
+            : "=r"(lower), "=r"(higher)
+            :
+            :);
 
     return ((uint64_t)higher << 32) | lower;
 }
 
-
 static uint8_t ish_to_mair[8] = {
-    0x04, /* 0b000 Non cacheble */
-    0x00, /* 0b001 Strongly ordered */
-    0xF0, /* 0b010 reserved */
-    0x04, /* 0b011 device */
-    0xF0, /* 0b100 reserved */
-    0x0F, /* 0b101 write back - write allocate */
-    0x0A, /* 0b110 write through */
-    0x0E, /* 0b111 write back - no write allocate */
+        0x04, /* 0b000 Non cacheble */
+        0x00, /* 0b001 Strongly ordered */
+        0xF0, /* 0b010 reserved */
+        0x04, /* 0b011 device */
+        0xF0, /* 0b100 reserved */
+        0x0F, /* 0b101 write back - write allocate */
+        0x0A, /* 0b110 write through */
+        0x0E, /* 0b111 write back - no write allocate */
 };
 
 static uint8_t osh_to_mair[4] = {
-    0x00, /* 0b00   Non-cacheable */
-    0x0F, /* 0b01   Write-back, Write-allocate */
-    0x0A, /* 0b10   Write-through, no Write-allocate */
-    0x0E, /* 0b11   Write-back, no Write-allocate */
+        0x00, /* 0b00   Non-cacheable */
+        0x0F, /* 0b01   Write-back, Write-allocate */
+        0x0A, /* 0b10   Write-through, no Write-allocate */
+        0x0E, /* 0b11   Write-back, no Write-allocate */
 };
 
-static uint64_t par2attr(uint64_t par)
-{
+static uint64_t par2attr(uint64_t par) {
     uint64_t attr;
 
     if (par & PAR_LPAE) {
@@ -218,14 +218,15 @@ static uint64_t par2attr(uint64_t par)
         attr |= ((par >> 7) & 0x03) << NS_PTE_SHAREABLE_SHIFT;
 
     } else {
-
         /* set phys address */
         trusty_assert((par & PAR_SS) == 0); /* super section not supported */
         attr = NS_PTE_PHYSADDR(par);
 
         /* cache attributes */
-        uint64_t inner = ((uint64_t)ish_to_mair[(par >> 4) & 0x7]) << NS_PTE_MAIR_INNER_SHIFT;
-        uint64_t outer = ((uint64_t)osh_to_mair[(par >> 2) & 0x3]) << NS_PTE_MAIR_OUTER_SHIFT;
+        uint64_t inner = ((uint64_t)ish_to_mair[(par >> 4) & 0x7])
+                         << NS_PTE_MAIR_INNER_SHIFT;
+        uint64_t outer = ((uint64_t)osh_to_mair[(par >> 2) & 0x3])
+                         << NS_PTE_MAIR_OUTER_SHIFT;
         uint64_t cache_attributes = (outer << 4) | inner;
 
         /* Trusty does not support any kind of device memory, so we will force
@@ -253,8 +254,7 @@ static uint64_t par2attr(uint64_t par)
     return attr;
 }
 
-static uint64_t va2par(vaddr_t va)
-{
+static uint64_t va2par(vaddr_t va) {
     uint64_t par;
     unsigned long irq_state;
 
@@ -268,9 +268,7 @@ static uint64_t va2par(vaddr_t va)
 
 #endif /* ARM64 */
 
-
-int trusty_encode_page_info(struct ns_mem_page_info *inf, void *va)
-{
+int trusty_encode_page_info(struct ns_mem_page_info* inf, void* va) {
     uint64_t par = va2par((vaddr_t)va);
 
     if (par & PAR_F) {
@@ -281,4 +279,3 @@ int trusty_encode_page_info(struct ns_mem_page_info *inf, void *va)
 
     return 0;
 }
-

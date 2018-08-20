@@ -24,30 +24,28 @@
 
 #include <trusty/keymaster_serializable.h>
 
-uint8_t *append_to_buf(uint8_t *buf, const void *data, size_t data_len)
-{
+uint8_t* append_to_buf(uint8_t* buf, const void* data, size_t data_len) {
     if (data && data_len) {
         trusty_memcpy(buf, data, data_len);
     }
     return buf + data_len;
 }
 
-uint8_t *append_uint32_to_buf(uint8_t *buf, uint32_t val)
-{
+uint8_t* append_uint32_to_buf(uint8_t* buf, uint32_t val) {
     return append_to_buf(buf, &val, sizeof(val));
 }
 
-uint8_t *append_sized_buf_to_buf(uint8_t *buf, const uint8_t *data,
-                                 uint32_t data_len)
-{
+uint8_t* append_sized_buf_to_buf(uint8_t* buf,
+                                 const uint8_t* data,
+                                 uint32_t data_len) {
     buf = append_uint32_to_buf(buf, data_len);
     return append_to_buf(buf, data, data_len);
 }
 
-int km_boot_params_serialize(const struct km_boot_params *params, uint8_t** out,
-                             uint32_t *out_size)
-{
-    uint8_t *tmp;
+int km_boot_params_serialize(const struct km_boot_params* params,
+                             uint8_t** out,
+                             uint32_t* out_size) {
+    uint8_t* tmp;
 
     if (!out || !params || !out_size) {
         return TRUSTY_ERR_INVALID_ARGS;
@@ -76,10 +74,10 @@ int km_boot_params_serialize(const struct km_boot_params *params, uint8_t** out,
     return TRUSTY_ERR_NONE;
 }
 
-int km_attestation_data_serialize(const struct km_attestation_data *data,
-                                 uint8_t** out, uint32_t *out_size)
-{
-    uint8_t *tmp;
+int km_attestation_data_serialize(const struct km_attestation_data* data,
+                                  uint8_t** out,
+                                  uint32_t* out_size) {
+    uint8_t* tmp;
 
     if (!out || !data || !out_size) {
         return TRUSTY_ERR_INVALID_ARGS;
@@ -97,9 +95,9 @@ int km_attestation_data_serialize(const struct km_attestation_data *data,
     return TRUSTY_ERR_NONE;
 }
 
-int km_raw_buffer_serialize(const struct km_raw_buffer *buf, uint8_t** out,
-                            uint32_t *out_size)
-{
+int km_raw_buffer_serialize(const struct km_raw_buffer* buf,
+                            uint8_t** out,
+                            uint32_t* out_size) {
     if (!out || !buf || !out_size) {
         return TRUSTY_ERR_INVALID_ARGS;
     }

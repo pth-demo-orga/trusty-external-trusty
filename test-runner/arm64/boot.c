@@ -28,19 +28,18 @@
 #include <stdint.h>
 
 /* QEMU FW_CFG, dtb and kernel load addresses */
-#define FW_CFG_BASE             0x09020000
-#define DTB_ADDR                0x40000000
-#define LOAD_ADDR               0x40080000
+#define FW_CFG_BASE 0x09020000
+#define DTB_ADDR 0x40000000
+#define LOAD_ADDR 0x40080000
 
-#define FW_CFG_KERNEL_SIZE      0x08
-#define FW_CFG_KERNEL_DATA      0x11
+#define FW_CFG_KERNEL_SIZE 0x08
+#define FW_CFG_KERNEL_DATA 0x11
 
-#define FW_CFG_DMA_CTL_READ     0x02
-#define FW_CFG_DMA_CTL_SELECT   0x08
+#define FW_CFG_DMA_CTL_READ 0x02
+#define FW_CFG_DMA_CTL_SELECT 0x08
 
 /* Reverse byte order for 16, 32 or 64 bit registers. Compiles to rev* opcode */
-static uint64_t rev(uint64_t val, unsigned bits)
-{
+static uint64_t rev(uint64_t val, unsigned bits) {
     uint64_t mask = ~0ULL;
     for (unsigned shift = bits >> 1; shift >= 8; shift >>= 1) {
         mask ^= mask << shift;
@@ -49,26 +48,22 @@ static uint64_t rev(uint64_t val, unsigned bits)
     return val;
 }
 
-static uint16_t rev16(uint16_t val)
-{
+static uint16_t rev16(uint16_t val) {
     return rev(val, 16);
 }
 
-static uint32_t rev32(uint32_t val)
-{
+static uint32_t rev32(uint32_t val) {
     return rev(val, 32);
 }
 
-static uint64_t rev64(uint64_t val)
-{
+static uint64_t rev64(uint64_t val) {
     return rev(val, 64);
 }
 
-void boot_next(void)
-{
-    volatile uint32_t *cfg_data32 = (void *)FW_CFG_BASE;
-    volatile uint16_t *cfg_ctl = (void *)(FW_CFG_BASE + 0x8);
-    volatile uint64_t *cfg_dma = (void *)(FW_CFG_BASE + 0x10);
+void boot_next(void) {
+    volatile uint32_t* cfg_data32 = (void*)FW_CFG_BASE;
+    volatile uint16_t* cfg_ctl = (void*)(FW_CFG_BASE + 0x8);
+    volatile uint64_t* cfg_dma = (void*)(FW_CFG_BASE + 0x10);
 
     volatile struct {
         uint32_t control;
@@ -84,8 +79,8 @@ void boot_next(void)
      *
      * Interface is defined in external/qemu/hw/nvram/fw_cfg.c.
      */
-    dma.control = rev32(FW_CFG_DMA_CTL_READ |
-                        FW_CFG_DMA_CTL_SELECT | FW_CFG_KERNEL_DATA << 16);
+    dma.control = rev32(FW_CFG_DMA_CTL_READ | FW_CFG_DMA_CTL_SELECT |
+                        FW_CFG_KERNEL_DATA << 16);
 
     /*
      * Select FW_CFG_KERNEL_SIZE item and copy it to the dma lenght descriptor.

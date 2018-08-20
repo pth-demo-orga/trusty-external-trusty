@@ -35,8 +35,7 @@ enum test_message_header {
     TEST_MESSAGE = 2,
 };
 
-bool starts_with(const char *str1, const char *str2, size_t str2_len)
-{
+bool starts_with(const char* str1, const char* str2, size_t str2_len) {
     for (size_t i = 0; i < str2_len; i++) {
         if (str1[i] == '\0') {
             return true;
@@ -53,23 +52,22 @@ bool starts_with(const char *str1, const char *str2, size_t str2_len)
  * responsible for reporting the error. It currently returns to the host with
  * 2 as the exit code.
  */
-void boot(void)
-{
+void boot(void) {
     int ret;
     int stdout;
     int chan;
     int status;
     char cmdline[256];
     size_t cmdline_len;
-    const char *port;
+    const char* port;
     const char boottest_cmd[] = "boottest ";
     char test_result[256];
     struct trusty_ipc_iovec iovec = {
-        .base = test_result,
-        .len = sizeof(test_result),
+            .base = test_result,
+            .len = sizeof(test_result),
     };
     struct trusty_dev trusty_dev;
-    struct trusty_ipc_dev *ipc_dev;
+    struct trusty_ipc_dev* ipc_dev;
     struct trusty_ipc_chan test_chan;
 
     /* Read test arguments from host (port name of test server to connect to) */

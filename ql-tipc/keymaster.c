@@ -45,14 +45,13 @@ static const size_t kUuidSize = 32;
 #define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
-static int km_send_request(uint32_t cmd, const void *req, size_t req_len)
-{
-    struct keymaster_message header = { .cmd = cmd };
+static int km_send_request(uint32_t cmd, const void* req, size_t req_len) {
+    struct keymaster_message header = {.cmd = cmd};
     int num_iovecs = req ? 2 : 1;
 
     struct trusty_ipc_iovec req_iovs[2] = {
-        { .base = &header, .len = sizeof(header) },
-        { .base = (void*)req, .len = req_len },
+            {.base = &header, .len = sizeof(header)},
+            {.base = (void*)req, .len = req_len},
     };
 
     return trusty_ipc_send(&km_chan, req_iovs, num_iovecs, true);
@@ -63,13 +62,12 @@ static int km_send_request(uint32_t cmd, const void *req, size_t req_len)
  */
 static int check_response_error(uint32_t expected_cmd,
                                 struct keymaster_message header,
-                                int32_t tipc_result)
-{
+                                int32_t tipc_result) {
     if (tipc_result < 0) {
         trusty_error("failed (%d) to recv response\n", tipc_result);
         return tipc_result;
     }
-    if ((size_t) tipc_result < sizeof(struct keymaster_message)) {
+    if ((size_t)tipc_result < sizeof(struct keymaster_message)) {
         trusty_error("invalid response size (%d)\n", tipc_result);
         return TRUSTY_ERR_GENERIC;
     }
@@ -91,15 +89,14 @@ static int check_response_error(uint32_t expected_cmd,
  * into |resp|, stripping each frame's command header. Returns the number
  * of bytes written to |resp| on success, negative on error.
  */
-static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
-{
-    struct keymaster_message header = { .cmd = cmd };
+static int km_read_raw_response(uint32_t cmd, void* resp, size_t resp_len) {
+    struct keymaster_message header = {.cmd = cmd};
     int rc = TRUSTY_ERR_GENERIC;
     size_t max_resp_len = resp_len;
     struct trusty_ipc_iovec resp_iovs[2] = {
-        { .base = &header, .len = sizeof(header) },
-        { .base = resp, .len = MIN(KEYMASTER_MAX_BUFFER_LENGTH, max_resp_len) }
-    };
+            {.base = &header, .len = sizeof(header)},
+            {.base = resp,
+             .len = MIN(KEYMASTER_MAX_BUFFER_LENGTH, max_resp_len)}};
 
     if (!resp) {
         return TRUSTY_ERR_GENERIC;
@@ -135,10 +132,11 @@ static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
  * On success, |error|, |resp_data|, and |resp_data_len| are filled
  * successfully. Returns a trusty_err.
  */
-static int km_read_data_response(uint32_t cmd, int32_t *error,
-                                 uint8_t* resp_data, uint32_t* resp_data_len)
-{
-    struct keymaster_message header = { .cmd = cmd };
+static int km_read_data_response(uint32_t cmd,
+                                 int32_t* error,
+                                 uint8_t* resp_data,
+                                 uint32_t* resp_data_len) {
+    struct keymaster_message header = {.cmd = cmd};
     int rc = TRUSTY_ERR_GENERIC;
     size_t max_resp_len = *resp_data_len;
     uint32_t resp_data_bytes = 0;
@@ -147,11 +145,11 @@ static int km_read_data_response(uint32_t cmd, int32_t *error,
      * only recv the keymaster_message header and response data.
      */
     struct trusty_ipc_iovec resp_iovs[4] = {
-        { .base = &header, .len = sizeof(header) },
-        { .base = error, .len = sizeof(int32_t) },
-        { .base = resp_data_len, .len = sizeof(uint32_t) },
-        { .base = resp_data, .len = MIN(KEYMASTER_MAX_BUFFER_LENGTH, max_resp_len) }
-    };
+            {.base = &header, .len = sizeof(header)},
+            {.base = error, .len = sizeof(int32_t)},
+            {.base = resp_data_len, .len = sizeof(uint32_t)},
+            {.base = resp_data,
+             .len = MIN(KEYMASTER_MAX_BUFFER_LENGTH, max_resp_len)}};
 
     rc = trusty_ipc_recv(&km_chan, resp_iovs, NELEMS(resp_iovs), true);
     rc = check_response_error(cmd, header, rc);
@@ -185,9 +183,11 @@ static int km_read_data_response(uint32_t cmd, int32_t *error,
  * caller expects an additional data buffer to be returned from the secure
  * side.
  */
-static int km_do_tipc(uint32_t cmd, void* req, uint32_t req_len,
-                      void* resp_data, uint32_t* resp_data_len)
-{
+static int km_do_tipc(uint32_t cmd,
+                      void* req,
+                      uint32_t req_len,
+                      void* resp_data,
+                      uint32_t* resp_data_len) {
     int rc = TRUSTY_ERR_GENERIC;
     struct km_no_response resp_header;
 
@@ -216,7 +216,8 @@ static int km_do_tipc(uint32_t cmd, void* req, uint32_t req_len,
     return TRUSTY_ERR_NONE;
 }
 
-static int32_t MessageVersion(uint8_t major_ver, uint8_t minor_ver,
+static int32_t MessageVersion(uint8_t major_ver,
+                              uint8_t minor_ver,
                               uint8_t subminor_ver) {
     int32_t message_version = -1;
     switch (major_ver) {
@@ -240,8 +241,7 @@ static int32_t MessageVersion(uint8_t major_ver, uint8_t minor_ver,
     return message_version;
 }
 
-static int km_get_version(int32_t *version)
-{
+static int km_get_version(int32_t* version) {
     int rc = TRUSTY_ERR_GENERIC;
     struct km_get_version_resp resp;
 
@@ -257,13 +257,12 @@ static int km_get_version(int32_t *version)
         return rc;
     }
 
-    *version = MessageVersion(resp.major_ver, resp.minor_ver,
-                              resp.subminor_ver);
+    *version =
+            MessageVersion(resp.major_ver, resp.minor_ver, resp.subminor_ver);
     return TRUSTY_ERR_NONE;
 }
 
-int km_tipc_init(struct trusty_ipc_dev *dev)
-{
+int km_tipc_init(struct trusty_ipc_dev* dev) {
     int rc = TRUSTY_ERR_GENERIC;
 
     trusty_assert(dev);
@@ -293,8 +292,7 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
     return TRUSTY_ERR_NONE;
 }
 
-void km_tipc_shutdown(struct trusty_ipc_dev *dev)
-{
+void km_tipc_shutdown(struct trusty_ipc_dev* dev) {
     if (!initialized)
         return;
     /* close channel */
@@ -303,25 +301,24 @@ void km_tipc_shutdown(struct trusty_ipc_dev *dev)
     initialized = false;
 }
 
-int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
+int trusty_set_boot_params(uint32_t os_version,
+                           uint32_t os_patchlevel,
                            keymaster_verified_boot_t verified_boot_state,
                            bool device_locked,
-                           const uint8_t *verified_boot_key_hash,
+                           const uint8_t* verified_boot_key_hash,
                            uint32_t verified_boot_key_hash_size,
-                           const uint8_t *verified_boot_hash,
-                           uint32_t verified_boot_hash_size)
-{
+                           const uint8_t* verified_boot_hash,
+                           uint32_t verified_boot_hash_size) {
     struct km_boot_params params = {
-        .os_version = os_version,
-        .os_patchlevel = os_patchlevel,
-        .device_locked = (uint32_t)device_locked,
-        .verified_boot_state = (uint32_t)verified_boot_state,
-        .verified_boot_key_hash_size = verified_boot_key_hash_size,
-        .verified_boot_key_hash = verified_boot_key_hash,
-        .verified_boot_hash_size = verified_boot_hash_size,
-        .verified_boot_hash = verified_boot_hash
-    };
-    uint8_t *req = NULL;
+            .os_version = os_version,
+            .os_patchlevel = os_patchlevel,
+            .device_locked = (uint32_t)device_locked,
+            .verified_boot_state = (uint32_t)verified_boot_state,
+            .verified_boot_key_hash_size = verified_boot_key_hash_size,
+            .verified_boot_key_hash = verified_boot_key_hash,
+            .verified_boot_hash_size = verified_boot_hash_size,
+            .verified_boot_hash = verified_boot_hash};
+    uint8_t* req = NULL;
     uint32_t req_size = 0;
     int rc = km_boot_params_serialize(&params, &req, &req_size);
 
@@ -338,16 +335,16 @@ end:
     return rc;
 }
 
-static int trusty_send_attestation_data(uint32_t cmd, const uint8_t *data,
+static int trusty_send_attestation_data(uint32_t cmd,
+                                        const uint8_t* data,
                                         uint32_t data_size,
-                                        keymaster_algorithm_t algorithm)
-{
+                                        keymaster_algorithm_t algorithm) {
     struct km_attestation_data attestation_data = {
-        .algorithm = (uint32_t)algorithm,
-        .data_size = data_size,
-        .data = data,
+            .algorithm = (uint32_t)algorithm,
+            .data_size = data_size,
+            .data = data,
     };
-    uint8_t *req = NULL;
+    uint8_t* req = NULL;
     uint32_t req_size = 0;
     int rc = km_attestation_data_serialize(&attestation_data, &req, &req_size);
 
@@ -364,15 +361,16 @@ end:
     return rc;
 }
 
-static int trusty_send_raw_buffer(uint32_t cmd, const uint8_t *req_data,
-                                  uint32_t req_data_size, uint8_t *resp_data,
-                                  uint32_t *resp_data_size)
-{
+static int trusty_send_raw_buffer(uint32_t cmd,
+                                  const uint8_t* req_data,
+                                  uint32_t req_data_size,
+                                  uint8_t* resp_data,
+                                  uint32_t* resp_data_size) {
     struct km_raw_buffer buf = {
-        .data_size = req_data_size,
-        .data = req_data,
+            .data_size = req_data_size,
+            .data = req_data,
     };
-    uint8_t *req = NULL;
+    uint8_t* req = NULL;
     uint32_t req_size = 0;
     int rc = km_raw_buffer_serialize(&buf, &req, &req_size);
     if (rc < 0) {
@@ -388,26 +386,24 @@ end:
     return rc;
 }
 
-int trusty_set_attestation_key(const uint8_t *key, uint32_t key_size,
-                               keymaster_algorithm_t algorithm)
-{
+int trusty_set_attestation_key(const uint8_t* key,
+                               uint32_t key_size,
+                               keymaster_algorithm_t algorithm) {
     return trusty_send_attestation_data(KM_SET_ATTESTATION_KEY, key, key_size,
                                         algorithm);
 }
 
-int trusty_append_attestation_cert_chain(const uint8_t *cert,
+int trusty_append_attestation_cert_chain(const uint8_t* cert,
                                          uint32_t cert_size,
-                                         keymaster_algorithm_t algorithm)
-{
-    return trusty_send_attestation_data(KM_APPEND_ATTESTATION_CERT_CHAIN,
-                                        cert, cert_size, algorithm);
+                                         keymaster_algorithm_t algorithm) {
+    return trusty_send_attestation_data(KM_APPEND_ATTESTATION_CERT_CHAIN, cert,
+                                        cert_size, algorithm);
 }
 
-int trusty_atap_get_ca_request(const uint8_t *operation_start,
+int trusty_atap_get_ca_request(const uint8_t* operation_start,
                                uint32_t operation_start_size,
-                               uint8_t **ca_request_p,
-                               uint32_t *ca_request_size_p)
-{
+                               uint8_t** ca_request_p,
+                               uint32_t* ca_request_size_p) {
     *ca_request_p = trusty_calloc(1, kMaxCaRequestSize);
     if (!*ca_request_p) {
         return TRUSTY_ERR_NO_MEMORY;
@@ -422,9 +418,8 @@ int trusty_atap_get_ca_request(const uint8_t *operation_start,
     return rc;
 }
 
-int trusty_atap_set_ca_response(const uint8_t *ca_response,
-                                uint32_t ca_response_size)
-{
+int trusty_atap_set_ca_response(const uint8_t* ca_response,
+                                uint32_t ca_response_size) {
     struct km_set_ca_response_begin_req begin_req;
     int rc = TRUSTY_ERR_GENERIC;
     uint32_t bytes_sent = 0, send_size = 0;
@@ -441,8 +436,8 @@ int trusty_atap_set_ca_response(const uint8_t *ca_response,
     while (bytes_sent < ca_response_size) {
         send_size = MIN(kMaxSendSize, ca_response_size - bytes_sent);
         rc = trusty_send_raw_buffer(KM_ATAP_SET_CA_RESPONSE_UPDATE,
-                                    ca_response + bytes_sent, send_size,
-                                    NULL, NULL);
+                                    ca_response + bytes_sent, send_size, NULL,
+                                    NULL);
         if (rc != TRUSTY_ERR_NONE) {
             return rc;
         }
@@ -453,8 +448,7 @@ int trusty_atap_set_ca_response(const uint8_t *ca_response,
     return km_do_tipc(KM_ATAP_SET_CA_RESPONSE_FINISH, NULL, 0, NULL, NULL);
 }
 
-int trusty_atap_read_uuid_str(char **uuid_p)
-{
+int trusty_atap_read_uuid_str(char** uuid_p) {
     *uuid_p = (char*)trusty_calloc(1, kUuidSize + 1);
     *uuid_p[kUuidSize] = '\0';
 
