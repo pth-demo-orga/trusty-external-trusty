@@ -47,6 +47,10 @@ bool starts_with(const char* str1, const char* str2, size_t str2_len) {
     return false;
 }
 
+static void write_str(int fd, const char* str) {
+    host_write(fd, str, trusty_strlen(str));
+}
+
 /*
  * Any return from this function indicates an internal error. The caller is
  * responsible for reporting the error. It currently returns to the host with
@@ -98,6 +102,7 @@ void boot(void) {
     trusty_ipc_chan_init(&test_chan, ipc_dev);
     chan = trusty_ipc_connect(&test_chan, port, true);
     if (chan < 0) {
+        write_str(stdout, "Failed to connect to test server\n");
         return;
     }
 
