@@ -33,12 +33,14 @@ MODULE_DEFINES += \
 MODULE_INCLUDES += \
 	$(LOCAL_DIR)/include \
 	$(QL_TIPC)/include \
+	$(LOCAL_DIR)/../interface/include \
 	$(LOCAL_DIR)/../../lk/include \
 	$(LOCAL_DIR)/../../lk/include/shared/lk \
 	$(LOCAL_DIR)/../../lk/lib/libc/include \
 
 MODULE_SRCS += \
 	$(LOCAL_DIR)/test-runner.c \
+	$(LOCAL_DIR)/test-runner-storage.c \
 	$(LOCAL_DIR)/test-runner-sysdeps.c \
 	$(LOCAL_DIR)/$(ARCH)/asm.S \
 	$(LOCAL_DIR)/$(ARCH)/trusty_mem.c \
@@ -46,6 +48,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/$(ARCH)/boot.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
+	$(QL_TIPC)/rpmb_proxy.c \
 	$(QL_TIPC)/util.c \
 	$(QL_TIPC)/arch/arm/trusty_dev.c \
 

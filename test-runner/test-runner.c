@@ -26,6 +26,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
 
@@ -95,6 +96,12 @@ void boot(void) {
     /* Create Trusty IPC device */
     ret = trusty_ipc_dev_create(&ipc_dev, &trusty_dev, PAGE_SIZE);
     if (ret != 0) {
+        return;
+    }
+
+    ret = rpmb_storage_proxy_init(ipc_dev, NULL);
+    if (ret != 0) {
+        write_str(stdout, "Failed to initialize storage proxy\n");
         return;
     }
 
