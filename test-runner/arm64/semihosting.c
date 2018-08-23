@@ -40,8 +40,12 @@ uint64_t semihosting(uint32_t op, uint64_t param);
 #define ADP_Stopped_ApplicationExit (0x20026)
 
 #define SYS_OPEN (0x01)
+#define SYS_CLOSE (0x02)
 
 #define SYS_WRITE (0x05)
+#define SYS_READ (0x06)
+
+#define SYS_SYSTEM (0x12)
 
 void host_exit(uint32_t code) {
     uint64_t params[2] = {
@@ -72,6 +76,13 @@ int host_open(const char* path, uint32_t mode) {
     return semihosting(SYS_OPEN, (uint64_t)params);
 }
 
+int host_close(int handle) {
+    uint64_t params[3] = {
+            handle,
+    };
+    return semihosting(SYS_CLOSE, (uint64_t)params);
+}
+
 int host_write(int handle, const void* data, size_t size) {
     uint64_t params[3] = {
             handle,
@@ -79,4 +90,21 @@ int host_write(int handle, const void* data, size_t size) {
             size,
     };
     return semihosting(SYS_WRITE, (uint64_t)params);
+}
+
+int host_read(int handle, void* data, size_t size) {
+    uint64_t params[3] = {
+            handle,
+            (uint64_t)data,
+            size,
+    };
+    return semihosting(SYS_READ, (uint64_t)params);
+}
+
+int host_system(const char* cmd) {
+    uint64_t params[2] = {
+            (uint64_t)cmd,
+            trusty_strlen(cmd),
+    };
+    return semihosting(SYS_SYSTEM, (uint64_t)params);
 }
