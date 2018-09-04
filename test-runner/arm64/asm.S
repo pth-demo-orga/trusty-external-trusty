@@ -28,8 +28,17 @@
 _start:
     /* Set exception vector base */
     adr x0, _start
-    msr vbar_el2, x0
 
+    mrs x1, CurrentEL
+    and x1, x1, #0xc
+    cmp x1, #0x8
+    bne vbar_setup_not_el2
+    msr vbar_el2, x0
+    b vbar_setup_done
+vbar_setup_not_el2:
+    msr vbar_el1, x0
+
+vbar_setup_done:
     /* Setup stack */
     adr x0, stack
     mov sp, x0
