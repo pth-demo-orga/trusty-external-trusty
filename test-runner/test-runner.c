@@ -57,9 +57,9 @@ static void write_str(int fd, const char* str) {
  * responsible for reporting the error. It currently returns to the host with
  * 2 as the exit code.
  */
-void boot(void) {
+void boot(int cpu) {
     int ret;
-    int stdout;
+    static int stdout;
     int chan;
     int status;
     char cmdline[256];
@@ -71,9 +71,20 @@ void boot(void) {
             .base = test_result,
             .len = sizeof(test_result),
     };
-    struct trusty_dev trusty_dev;
+    static struct trusty_dev trusty_dev;
     struct trusty_ipc_dev* ipc_dev;
     struct trusty_ipc_chan test_chan;
+
+    if (cpu) {
+        while (true) {
+            ret = trusty_dev_nop(&trusty_dev);
+            if (!ret) {
+                trusty_idle(&trusty_dev, false);
+            } else {
+                write_str(stdout, "Secondary cpu unexpected error code\n");
+            }
+        }
+    }
 
     /* Read test arguments from host (port name of test server to connect to) */
     cmdline_len = host_get_cmdline(cmdline, sizeof(cmdline));
@@ -102,6 +113,12 @@ void boot(void) {
     ret = rpmb_storage_proxy_init(ipc_dev, NULL);
     if (ret != 0) {
         write_str(stdout, "Failed to initialize storage proxy\n");
+        return;
+    }
+
+    ret = arch_start_secondary_cpus();
+    if (ret) {
+        write_str(stdout, "Failed to start secondary CPUs\n");
         return;
     }
 

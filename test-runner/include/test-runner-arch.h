@@ -55,6 +55,8 @@ int host_read(int handle, void* data, size_t size);
 int host_write(int handle, const void* data, size_t size);
 int host_system(const char* cmd);
 
+int arch_start_secondary_cpus(void);
+
 /*
  * Boot next operating system.
  */

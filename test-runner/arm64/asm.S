@@ -24,6 +24,19 @@
 
 .text
 
+#define CPU_COUNT (4)
+#define STACK_SIZE (4096)
+
+#define GICD_BASE (0x08000000)
+#define GICD_SGIR (0xf00)
+
+.macro get_cpu_num, reg
+    /* Get cpu number */
+    mrs \reg, mpidr_el1
+    bic \reg, \reg, #(1<<24) /* Clear MT */
+    bic \reg, \reg, #(3<<30) /* Clear RES1 and U */
+.endm
+
 .globl _start
 _start:
     /* Set exception vector base */
@@ -39,9 +52,17 @@ vbar_setup_not_el2:
     msr vbar_el1, x0
 
 vbar_setup_done:
+    get_cpu_num x0
+
     /* Setup stack */
-    adr x0, stack
-    mov sp, x0
+    mov x1, #STACK_SIZE
+    mul x1, x1, x0
+    adr x2, stack
+    add x2, x2, x1
+    adr x1, stack_space_end
+    cmp x2, x1
+    bhi error
+    mov sp, x2
 
     /* Jump to c-code */
     bl boot
@@ -60,11 +81,6 @@ semihosting:
 exit_params:
     .quad 0x20026 /* ADP_Stopped_ApplicationExit */
     .quad 2 /* exit code */
-
-.globl trusty_idle
-trusty_idle:
-    wfi
-    ret
 
 /*
  * Catch exceptions (except sync-sp_el0 as we don't use that mode and it would
@@ -91,7 +107,56 @@ exception 0x680
 exception 0x700
 exception 0x780
 
+.globl trusty_idle
+trusty_idle:
+    // x1 = event_poll
+    adr x0, skip_cpu0_wfi // x0 = &skip_cpu0_wfi
+    get_cpu_num x2 // x2 = cpunum
+    cbz x2, cpu0_idle // if cpunum == 0 goto cpu0_idle
+
+    // skip_cpu0_wfi = cpunum (any value non-0 would work)
+    stlr x2, [x0]
+
+    // Send int 15 to cpu 0 to take it out of wfi
+    ldr x3, =GICD_BASE
+    ldr x4, =0x1800f
+    str x4, [x3, GICD_SGIR]
+
+    b wfi
+
+cpu0_idle:
+    cbz x1, wfi // only clear and skip event_poll wfi
+    ldaxr x3, [x0] // x1 = skip_cpu0_wfi
+    stxr w4, xzr, [x0] // skip_cpu0_wfi = 0
+    cbnz x3, no_wfi
+wfi:
+    wfi
+no_wfi:
+    ret
+
+.globl arch_start_secondary_cpus
+arch_start_secondary_cpus:
+    sub sp, sp, #8
+    mov x1, #1
+    str x1, [sp]
+start_secondary_cpu_loop:
+    ldr x0, =0xC4000003 /* psci CPU_ON */
+    adr x2, _start
+    mov x3, #0
+    smc 0
+    ldr x1, [sp]
+    add x1, x1, #1
+    str x1, [sp]
+    cmp x1, #CPU_COUNT
+    blo start_secondary_cpu_loop
+    add sp, sp, #8
+    ret
 
 .data
-    .space 4096
+    .space STACK_SIZE
 stack:
+    .space STACK_SIZE * (CPU_COUNT - 1)
+stack_space_end:
+
+skip_cpu0_wfi:
+    .long 0
