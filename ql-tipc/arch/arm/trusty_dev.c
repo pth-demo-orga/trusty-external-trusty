@@ -138,7 +138,7 @@ static unsigned long trusty_std_call_helper(struct trusty_dev* dev,
         if ((int)ret != SM_ERR_BUSY)
             break;
 
-        trusty_idle(dev);
+        trusty_idle(dev, false);
     }
 
     return ret;
@@ -166,7 +166,7 @@ static int32_t trusty_std_call32(struct trusty_dev* dev,
         trusty_debug("%s(0x%x 0x%x 0x%x 0x%x) interrupted\n", __func__, smcnr,
                      a0, a1, a2);
         if (ret == SM_ERR_CPU_IDLE) {
-            trusty_idle(dev);
+            trusty_idle(dev, false);
         }
         ret = trusty_std_call_helper(dev, SMC_SC_RESTART_LAST, 0, 0, 0);
     }
@@ -252,4 +252,9 @@ int trusty_dev_shutdown(struct trusty_dev* dev) {
 
     dev->priv_data = NULL;
     return 0;
+}
+
+int trusty_dev_nop(struct trusty_dev* dev) {
+    int ret = trusty_std_call32(dev, SMC_SC_NOP, 0, 0, 0);
+    return ret == SM_ERR_NOP_DONE ? 0 : -1;
 }

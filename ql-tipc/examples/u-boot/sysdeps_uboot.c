@@ -42,7 +42,7 @@ void trusty_local_irq_restore(unsigned long* state) {
     enable_interrupts();
 }
 
-void trusty_idle(struct trusty_dev* dev) {
+void trusty_idle(struct trusty_dev* dev, bool event_poll) {
     wfi();
 }
 

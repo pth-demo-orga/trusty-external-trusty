@@ -210,7 +210,7 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
                         const struct trusty_ipc_iovec* iovs,
                         size_t iovs_cnt);
 
-void trusty_ipc_dev_idle(struct trusty_ipc_dev* dev);
+void trusty_ipc_dev_idle(struct trusty_ipc_dev* dev, bool event_poll);
 
 /*
  * Initializes @chan with default values and @dev.

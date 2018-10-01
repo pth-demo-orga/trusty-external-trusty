@@ -70,8 +70,14 @@ void trusty_local_irq_restore(unsigned long* state);
  * Put in standby state waiting for interrupt.
  *
  * @dev: Trusty device initialized with trusty_dev_init
+ * @event_poll: If true this function is entered after trusty_ipc_poll_for_event
+ *              returned TRUSTY_EVENT_NONE. In this case this call needs to
+ *              return without waiting for another interrupt if a secondary CPU
+ *              (any CPU other than the CPU that is waiting for a message) has
+ *              entered idle since the last such call. If there is only one CPU
+ *              calling into trusty this argument can be ignored.
  */
-void trusty_idle(struct trusty_dev* dev);
+void trusty_idle(struct trusty_dev* dev, bool event_poll);
 /*
  * Aborts the program or reboots the device.
  */

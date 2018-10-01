@@ -50,6 +50,11 @@ int trusty_dev_init(struct trusty_dev* dev, void* priv);
 int trusty_dev_shutdown(struct trusty_dev* dev);
 
 /*
+ * Enter trusty on cpus that are not in an ipc call
+ */
+int trusty_dev_nop(struct trusty_dev* dev);
+
+/*
  * Invokes creation of queueless Trusty IPC device on the secure side.
  * @buf will be mapped into Trusty's address space.
  *

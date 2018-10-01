@@ -61,7 +61,7 @@ static int wait_for_complete(struct trusty_ipc_chan* chan) {
             break;
 
         if (rc == TRUSTY_EVENT_NONE)
-            trusty_ipc_dev_idle(chan->dev);
+            trusty_ipc_dev_idle(chan->dev, true);
     }
 
     return chan->complete;
@@ -197,7 +197,7 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
     struct trusty_ipc_event evt;
     struct trusty_ipc_chan* chan;
 
-    trusty_assert(dev);
+    trusty_assert(ipc_dev);
 
     rc = trusty_ipc_dev_get_event(ipc_dev, 0, &evt);
     if (rc) {

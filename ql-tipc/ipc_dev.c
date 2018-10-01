@@ -450,6 +450,6 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
     return (int)copied;
 }
 
-void trusty_ipc_dev_idle(struct trusty_ipc_dev* dev) {
-    trusty_idle(dev->tdev);
+void trusty_ipc_dev_idle(struct trusty_ipc_dev* dev, bool event_poll) {
+    trusty_idle(dev->tdev, event_poll);
 }
