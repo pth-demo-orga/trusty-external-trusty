@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018, Google, Inc. All rights reserved
+# Copyright (c) 2012-2019 LK Trusty Authors. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files
@@ -21,42 +21,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-LOCAL_DIR := $(GET_LOCAL_DIR)
+MODULE_SRCS +=
 
-MODULE := $(LOCAL_DIR)
-
-QL_TIPC = $(LOCAL_DIR)/../ql-tipc
-
-MODULE_DEFINES += \
-	NS_ARCH_ARM64=1 \
-
-MODULE_INCLUDES += \
-	$(LOCAL_DIR)/include \
-	$(LOCAL_DIR)/$(ARCH)/include \
-	$(QL_TIPC)/include \
-	$(LOCAL_DIR)/../interface/include \
-	external/lk/include \
-	external/lk/include/shared/lk \
-	external/lk/lib/libc/include \
-
-MODULE_SRCS += \
-	$(LOCAL_DIR)/test-runner.c \
-	$(LOCAL_DIR)/test-runner-storage.c \
-	$(LOCAL_DIR)/test-runner-sysdeps.c \
-	$(LOCAL_DIR)/utils.c \
-	$(LOCAL_DIR)/virtio.c \
-	$(LOCAL_DIR)/virtio-console.c \
-	$(QL_TIPC)/ipc.c \
-	$(QL_TIPC)/ipc_dev.c \
-	$(QL_TIPC)/rpmb_proxy.c \
-	$(QL_TIPC)/trusty_dev_common.c \
-	$(QL_TIPC)/util.c \
-
-ifeq (true,$(call TOBOOL,$(VIRTIO_MMIO_DEVICE)))
-MODULE_SRCS += $(LOCAL_DIR)/virtio-mmio.c
-else
-MODULE_SRCS += $(LOCAL_DIR)/virtio-pci.c
-endif
-
-include $(LOCAL_DIR)/$(ARCH)/rules.mk
-include make/module.mk
+# test-runner runs in kernel level, do not use FPU
+MODULE_COMPILEFLAGS += -msoft-float
