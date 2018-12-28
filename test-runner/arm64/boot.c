@@ -87,7 +87,7 @@ void boot_next(void) {
      * Both are big-endian so byte order reversal is needed.
      */
     *cfg_ctl = rev16(FW_CFG_KERNEL_SIZE);
-    dma.length = *cfg_data32;
+    dma.length = rev32(*cfg_data32);
     if (!dma.length) {
         /* Return if no image was provided */
         return;
