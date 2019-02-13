@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <test-runner-arch.h>
@@ -29,6 +30,7 @@
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
 #include <utils.h>
+#include <virtio-console.h>
 
 enum test_message_header {
     TEST_PASSED = 0,
@@ -69,6 +71,7 @@ void boot(int cpu) {
     static struct trusty_dev trusty_dev;
     struct trusty_ipc_dev* ipc_dev;
     struct trusty_ipc_chan test_chan;
+    struct virtio_console* console;
 
     if (cpu) {
         while (true) {
@@ -90,6 +93,8 @@ void boot(int cpu) {
     }
 
     init_log();
+    console = init_virtio_console();
+    assert(console);
 
     port = cmdline + sizeof(boottest_cmd) - 1;
 
