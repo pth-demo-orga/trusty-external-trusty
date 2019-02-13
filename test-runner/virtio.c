@@ -1,0 +1,152 @@
+/*
+ * Copyright (C) 2019 The Android Open Source Project
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy,
+ * modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#include <arch/io-mem.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <test-runner-arch.h>
+#include <trusty/sysdeps.h>
+#include <virtio.h>
+
+void virtio_set_features(struct virtio_mmio_config* vio, uint64_t features) {
+    io_write_32(&vio->guest_features_sel, 0);
+    io_write_32(&vio->guest_features, features & 0xFFFF);
+    io_write_32(&vio->guest_features_sel, 1);
+    io_write_32(&vio->guest_features, features >> 32);
+}
+
+uint64_t virtio_get_features(struct virtio_mmio_config* vio) {
+    io_write_32(&vio->host_features_sel, 1);
+    uint64_t features = io_read_32(&vio->host_features);
+    features <<= 32;
+    io_write_32(&vio->host_features_sel, 0);
+    features |= io_read_32(&vio->host_features);
+    return features;
+}
+
+void vq_attach(struct virtq* vq, uint16_t idx) {
+    vq->queue_id = idx;
+    io_write_32(&vq->vio->queue_sel, idx);
+    io_write_32(&vq->vio->queue_num, vq->num_bufs);
+    io_write_32(&vq->vio->queue_align, PAGE_SIZE);
+    io_write_32(&vq->vio->queue_pfn, (uintptr_t)vq->raw >> PAGE_SHIFT);
+}
+
+void vq_init(struct virtq* vq,
+             struct virtq_raw* raw,
+             struct virtio_mmio_config* vio,
+             bool is_input) {
+    uint16_t flags = 0;
+
+    if (is_input) {
+        flags = VIRTQ_DESC_F_WRITE;
+    }
+
+    vq->raw = raw;
+    vq->num_bufs = VQ_SIZE;
+    for (size_t i = 0; i < vq->num_bufs; i++) {
+        vq->raw->desc[i].flags = flags;
+    }
+
+    vq->vio = vio;
+}
+
+void vq_make_avail(struct virtq* vq, uint16_t desc_id) {
+    io_write_16(&vq->raw->avail.ring[vq->raw->avail.idx % vq->num_bufs],
+                desc_id);
+    io_write_16(&vq->raw->avail.idx, vq->raw->avail.idx + 1);
+}
+
+void vq_kick(struct virtq* vq) {
+    io_write_32(&vq->vio->queue_notify, vq->queue_id);
+}
+
+void vq_wait(struct virtq* vq) {
+    while (!vq_ready(vq)) {
+    }
+}
+
+uint32_t vq_adv(struct virtq* vq) {
+    return vq->raw->used.ring[vq->old_used_idx++ % vq->num_bufs].len;
+}
+
+void vq_set_buf_w(struct virtq* vq, uint16_t desc_id, void* data, size_t len) {
+    vq->raw->desc[desc_id].addr = (uint64_t)data;
+    vq->raw->desc[desc_id].len = len;
+    assert(vq->raw->desc[desc_id].flags == VIRTQ_DESC_F_WRITE);
+}
+
+void vq_set_buf_r(struct virtq* vq,
+                  uint16_t desc_id,
+                  const void* data,
+                  size_t len) {
+    vq->raw->desc[desc_id].addr = (uint64_t)data;
+    vq->raw->desc[desc_id].len = len;
+    assert(vq->raw->desc[desc_id].flags == 0);
+}
+
+ssize_t send_vq(struct virtq* vq, const char* data, size_t len) {
+    /*
+     * This logic only works for queue size 1.
+     * If someone wants a bigger ring in the future, they will need to add
+     * logic to select a buffer not currently in the available ring.
+     */
+    assert(VQ_SIZE == 1);
+    if (len == 0) {
+        return 0;
+    }
+
+    vq_set_buf_r(vq, 0, data, len);
+    vq_make_avail(vq, 0);
+    vq_kick(vq);
+    vq_wait(vq);
+    vq_set_buf_r(vq, 0, NULL, 0);
+    /*
+     * QEMU's device does not set len correctly, as per the legacy-mode
+     * notes. This means the value returned by vq_adv is unreliable, so we
+     * assume no partial write and return len.
+     */
+    vq_adv(vq);
+    return len;
+}
+
+ssize_t recv_vq(struct virtq* vq, char* data, size_t len) {
+    /*
+     * This logic only works for queue size 1.
+     * If someone wants a bigger ring in the future, they will need to add
+     * logic to select a buffer not currently in the available ring.
+     */
+    assert(VQ_SIZE == 1);
+    if (len == 0) {
+        return 0;
+    }
+
+    vq_set_buf_w(vq, 0, data, len);
+    vq_make_avail(vq, 0);
+    vq_kick(vq);
+    vq_wait(vq);
+    vq_set_buf_w(vq, 0, NULL, 0);
+    return vq_adv(vq);
+}

@@ -44,6 +44,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/test-runner-storage.c \
 	$(LOCAL_DIR)/test-runner-sysdeps.c \
 	$(LOCAL_DIR)/utils.c \
+	$(LOCAL_DIR)/virtio.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
 	$(QL_TIPC)/rpmb_proxy.c \

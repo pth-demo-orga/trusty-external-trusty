@@ -43,7 +43,9 @@
 #define TRUSTY_ATTR_SENTINEL __attribute__((__sentinel__))
 #define TRUSTY_ATTR_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
-#define PAGE_SIZE 4096
+#define PAGE_SHIFT 12
+#define PAGE_SIZE (1 << PAGE_SHIFT)
+
 /*
  * Struct containing attributes for memory to be shared with secure size.
  */
