@@ -31,6 +31,7 @@
 #include <trusty/trusty_ipc.h>
 #include <utils.h>
 #include <virtio-console.h>
+#include <virtio-rpmb.h>
 
 enum test_message_header {
     TEST_PASSED = 0,
@@ -110,10 +111,14 @@ void boot(int cpu) {
         return;
     }
 
-    ret = rpmb_storage_proxy_init(ipc_dev, NULL);
-    if (ret != 0) {
-        log_msg("Failed to initialize storage proxy\n");
-        return;
+    /* If we don't have a VirtIO RPMB device, skip storage proxy */
+    if (!init_virtio_rpmb(console)) {
+        if (rpmb_storage_proxy_init(ipc_dev, NULL)) {
+            log_msg("Failed to initialize storage proxy\n");
+            return;
+        }
+    } else {
+        log_msg("Could not find serial port rpmb0, skipping storage proxy.\n");
     }
 
     ret = arch_start_secondary_cpus();

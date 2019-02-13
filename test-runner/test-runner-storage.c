@@ -22,11 +22,62 @@
  * SOFTWARE.
  */
 
+#include <assert.h>
+#include <test-runner-arch.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/util.h>
+#include <virtio-rpmb.h>
+#include <virtio.h>
 
-#include <test-runner-arch.h>
+static const char* rpmb_devname = "rpmb0";
+
+static char strcmp(const char* a, const char* b) {
+    while ((*a != 0) && (*b != 0) && (*a == *b)) {
+        a++;
+        b++;
+    }
+    return *a - *b;
+}
+
+static struct virtq input;
+static struct virtq_raw input_raw;
+static struct virtq output;
+static struct virtq_raw output_raw;
+
+static int rpmb_scan(struct virtio_console* console) {
+    /* Scan for RPMB */
+    for (size_t i = 0; i < MAX_PORTS; i++) {
+        if (!strcmp(rpmb_devname, console->ports[i].name)) {
+            assert(console->ports[i].host_connected);
+            return i;
+        }
+    }
+
+    /* RPMB not found */
+    return -1;
+}
+
+int init_virtio_rpmb(struct virtio_console* console) {
+    int rpmb_id = rpmb_scan(console);
+    if (rpmb_id < 0) {
+        return rpmb_id;
+    }
+
+    vq_init(&input, &input_raw, console->vio, true);
+    vq_init(&output, &output_raw, console->vio, false);
+
+    virtio_console_connect_port(console, rpmb_id, &input, &output);
+    return 0;
+}
+
+static ssize_t send_virtio_rpmb(const void* data, size_t len) {
+    return send_vq(&output, data, len);
+}
+
+static ssize_t recv_virtio_rpmb(void* data, size_t len) {
+    return recv_vq(&input, data, len);
+}
 
 int rpmb_storage_send(void* rpmb_dev,
                       const void* rel_write_data,
@@ -36,41 +87,44 @@ int rpmb_storage_send(void* rpmb_dev,
                       void* read_buf,
                       size_t read_size) {
     int ret;
-    int fd;
     uint16_t read_count = read_size / MMC_BLOCK_SIZE;
+    uint16_t cmd_count = (rel_write_size + write_size) / MMC_BLOCK_SIZE;
 
-    fd = host_open("RPMB_CMDRES", HOST_OPEN_MODE_WRB);
-    if (fd < 0) {
-        goto err_no_fd;
-    }
+    assert(rel_write_size % MMC_BLOCK_SIZE == 0);
+    assert(write_size % MMC_BLOCK_SIZE == 0);
 
-    ret = host_write(fd, &read_count, sizeof(read_count));
-
-    ret = host_write(fd, rel_write_data, rel_write_size);
-    if (ret) {
+    ret = send_virtio_rpmb(&read_count, sizeof(read_count));
+    if (ret < 0) {
         goto err;
     }
-    ret = host_write(fd, write_data, write_size);
-    if (ret) {
+    assert((size_t)ret == sizeof(read_count));
+
+    ret = send_virtio_rpmb(&cmd_count, sizeof(cmd_count));
+    if (ret < 0) {
         goto err;
     }
+    assert((size_t)ret == sizeof(cmd_count));
 
-    ret = host_system("./rpmb_dev --dev RPMB_DATA --cmd RPMB_CMDRES");
-    if (ret) {
+    ret = send_virtio_rpmb(rel_write_data, rel_write_size);
+    if (ret < 0) {
         goto err;
     }
+    assert((size_t)ret == rel_write_size);
 
-    ret = host_read(fd, read_buf, read_size);
-    if (ret) {
+    ret = send_virtio_rpmb(write_data, write_size);
+    if (ret < 0) {
         goto err;
     }
+    assert((size_t)ret == write_size);
 
-    host_close(fd);
+    ret = recv_virtio_rpmb(read_buf, read_size);
+    if (ret < 0) {
+        goto err;
+    }
+    assert((size_t)ret == read_size);
 
     return 0;
 
 err:
-    host_close(fd);
-err_no_fd:
     return TRUSTY_ERR_GENERIC;
 }
