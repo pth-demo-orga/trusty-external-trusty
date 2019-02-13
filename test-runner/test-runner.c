@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-#include <test-runner-arch.h>
-
 #include <stddef.h>
 #include <stdint.h>
+#include <test-runner-arch.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
+#include <utils.h>
 
 enum test_message_header {
     TEST_PASSED = 0,
@@ -48,10 +48,6 @@ bool starts_with(const char* str1, const char* str2, size_t str2_len) {
     return false;
 }
 
-static void write_str(int fd, const char* str) {
-    host_write(fd, str, trusty_strlen(str));
-}
-
 /*
  * Any return from this function indicates an internal error. The caller is
  * responsible for reporting the error. It currently returns to the host with
@@ -59,7 +55,6 @@ static void write_str(int fd, const char* str) {
  */
 void boot(int cpu) {
     int ret;
-    static int stdout;
     int chan;
     int status;
     char cmdline[256];
@@ -81,7 +76,7 @@ void boot(int cpu) {
             if (!ret) {
                 trusty_idle(&trusty_dev, false);
             } else {
-                write_str(stdout, "Secondary cpu unexpected error code\n");
+                log_msg("Secondary cpu unexpected error code\n");
             }
         }
     }
@@ -93,10 +88,10 @@ void boot(int cpu) {
         boot_next();
         return;
     }
-    port = cmdline + sizeof(boottest_cmd) - 1;
 
-    /* Open special file ":tt" for write to select stdout */
-    stdout = host_open(":tt", HOST_OPEN_MODE_W);
+    init_log();
+
+    port = cmdline + sizeof(boottest_cmd) - 1;
 
     /* Init Trusty device */
     ret = trusty_dev_init(&trusty_dev, NULL);
@@ -112,13 +107,13 @@ void boot(int cpu) {
 
     ret = rpmb_storage_proxy_init(ipc_dev, NULL);
     if (ret != 0) {
-        write_str(stdout, "Failed to initialize storage proxy\n");
+        log_msg("Failed to initialize storage proxy\n");
         return;
     }
 
     ret = arch_start_secondary_cpus();
     if (ret) {
-        write_str(stdout, "Failed to start secondary CPUs\n");
+        log_msg("Failed to start secondary CPUs\n");
         return;
     }
 
@@ -126,7 +121,7 @@ void boot(int cpu) {
     trusty_ipc_chan_init(&test_chan, ipc_dev);
     chan = trusty_ipc_connect(&test_chan, port, true);
     if (chan < 0) {
-        write_str(stdout, "Failed to connect to test server\n");
+        log_msg("Failed to connect to test server\n");
         return;
     }
 
@@ -142,7 +137,7 @@ void boot(int cpu) {
         } else if (test_result[0] == TEST_FAILED) {
             break;
         } else if (test_result[0] == TEST_MESSAGE) {
-            host_write(stdout, test_result + 1, ret - 1);
+            log_buf(test_result + 1, ret - 1);
         } else {
             return;
         }

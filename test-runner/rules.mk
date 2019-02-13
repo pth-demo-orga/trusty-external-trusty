@@ -32,6 +32,7 @@ MODULE_DEFINES += \
 
 MODULE_INCLUDES += \
 	$(LOCAL_DIR)/include \
+	$(LOCAL_DIR)/$(ARCH)/include \
 	$(QL_TIPC)/include \
 	$(LOCAL_DIR)/../interface/include \
 	$(LOCAL_DIR)/../../lk/include \
@@ -42,14 +43,12 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/test-runner.c \
 	$(LOCAL_DIR)/test-runner-storage.c \
 	$(LOCAL_DIR)/test-runner-sysdeps.c \
-	$(LOCAL_DIR)/$(ARCH)/asm.S \
-	$(LOCAL_DIR)/$(ARCH)/trusty_mem.c \
-	$(LOCAL_DIR)/$(ARCH)/semihosting.c \
-	$(LOCAL_DIR)/$(ARCH)/boot.c \
+	$(LOCAL_DIR)/utils.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
 	$(QL_TIPC)/rpmb_proxy.c \
 	$(QL_TIPC)/util.c \
 	$(QL_TIPC)/arch/arm/trusty_dev.c \
 
+include $(LOCAL_DIR)/$(ARCH)/rules.mk
 include make/module.mk
