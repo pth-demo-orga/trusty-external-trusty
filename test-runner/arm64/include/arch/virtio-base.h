@@ -24,5 +24,23 @@
 
 #pragma once
 
-/* Address at which QEMU loads the VirtIO config by default */
+/* Address at which QEMU loads the VirtIO MMIO config by default. */
 #define VIRTIO_MMIO_BASE 0xa000000
+
+/*
+ * Address at which QEMU loads the Virtio PCIe ECAM by default.
+ *
+ * If qemu is built from scratch by source code from the Trusty external/qemu
+ * repository, PCIE ECAM base address is specified at 0x4010000000ULL.
+ */
+#define VIRT_PCIE_ECAM_HIGH_BASE 0x4010000000ULL
+#define VIRT_PCIE_ECAM_HIGH_SIZE 0x10000000
+
+/* Default address for second PCIe Window, start from 512GB */
+#define VIRT_PCIE_MMIO_HIGH_BASE 0x8000000000ULL
+
+/* Keep 1GB size in case Android kernel maps devices */
+#define RESERVED_REGION_FOR_ANDROID_KERNEL 0x40000000
+
+#define VIRT_CONSOLE_BAR_ADDR \
+    VIRT_PCIE_MMIO_HIGH_BASE + RESERVED_REGION_FOR_ANDROID_KERNEL
