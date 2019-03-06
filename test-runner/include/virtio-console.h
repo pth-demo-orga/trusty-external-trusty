@@ -99,7 +99,7 @@ struct port {
  * @ports: Current port state
  */
 struct virtio_console {
-    struct virtio_mmio_config* vio;
+    struct virtio_config* vio;
     struct port ports[MAX_PORTS];
 };
 

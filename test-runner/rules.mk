@@ -46,6 +46,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/utils.c \
 	$(LOCAL_DIR)/virtio.c \
 	$(LOCAL_DIR)/virtio-console.c \
+	$(LOCAL_DIR)/virtio-mmio.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
 	$(QL_TIPC)/rpmb_proxy.c \

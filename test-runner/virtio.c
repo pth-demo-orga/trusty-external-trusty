@@ -28,35 +28,12 @@
 #include <stdint.h>
 #include <test-runner-arch.h>
 #include <trusty/sysdeps.h>
+#include <virtio-device.h>
 #include <virtio.h>
-
-void virtio_set_features(struct virtio_mmio_config* vio, uint64_t features) {
-    io_write_32(&vio->guest_features_sel, 0);
-    io_write_32(&vio->guest_features, features & 0xFFFF);
-    io_write_32(&vio->guest_features_sel, 1);
-    io_write_32(&vio->guest_features, features >> 32);
-}
-
-uint64_t virtio_get_features(struct virtio_mmio_config* vio) {
-    io_write_32(&vio->host_features_sel, 1);
-    uint64_t features = io_read_32(&vio->host_features);
-    features <<= 32;
-    io_write_32(&vio->host_features_sel, 0);
-    features |= io_read_32(&vio->host_features);
-    return features;
-}
-
-void vq_attach(struct virtq* vq, uint16_t idx) {
-    vq->queue_id = idx;
-    io_write_32(&vq->vio->queue_sel, idx);
-    io_write_32(&vq->vio->queue_num, vq->num_bufs);
-    io_write_32(&vq->vio->queue_align, PAGE_SIZE);
-    io_write_32(&vq->vio->queue_pfn, (uintptr_t)vq->raw >> PAGE_SHIFT);
-}
 
 void vq_init(struct virtq* vq,
              struct virtq_raw* raw,
-             struct virtio_mmio_config* vio,
+             struct virtio_config* vio,
              bool is_input) {
     uint16_t flags = 0;
 
@@ -77,10 +54,6 @@ void vq_make_avail(struct virtq* vq, uint16_t desc_id) {
     io_write_16(&vq->raw->avail.ring[vq->raw->avail.idx % vq->num_bufs],
                 desc_id);
     io_write_16(&vq->raw->avail.idx, vq->raw->avail.idx + 1);
-}
-
-void vq_kick(struct virtq* vq) {
-    io_write_32(&vq->vio->queue_notify, vq->queue_id);
 }
 
 void vq_wait(struct virtq* vq) {

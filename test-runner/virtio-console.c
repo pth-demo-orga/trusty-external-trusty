@@ -5,6 +5,7 @@
 #include <trusty/sysdeps.h>
 #include <utils.h>
 #include <virtio-console.h>
+#include <virtio-device.h>
 #include <virtio.h>
 
 #define DESIRED_FEATURES (VIRTIO_CONSOLE_F_MULTIPORT)
@@ -17,18 +18,6 @@ static struct virtq cmd_input;
 static struct virtq_raw cmd_input_raw;
 static struct virtq cmd_output;
 static struct virtq_raw cmd_output_raw;
-
-static struct virtio_mmio_config* virtio_probe_console() {
-    struct virtio_mmio_config* cfg;
-
-    for (cfg = (struct virtio_mmio_config*)VIRTIO_MMIO_BASE;
-         cfg->magic == VIRTIO_MMIO_MAGIC; cfg++) {
-        if (cfg->device_id == VIRTIO_DEVICE_ID_CONSOLE) {
-            return cfg;
-        }
-    }
-    return NULL;
-}
 
 struct console_control {
     uint32_t id;
@@ -85,7 +74,7 @@ static void release_control_msg(void) {
     vq_make_avail(&cmd_input, 0);
 }
 
-static void control_setup(struct virtio_mmio_config* vio) {
+static void control_setup(struct virtio_config* vio) {
     vq_init(&cmd_input, &cmd_input_raw, vio, true);
     vq_init(&cmd_output, &cmd_output_raw, vio, false);
     vq_attach(&cmd_input, VIRTIO_CONSOLE_CTRL_RX);
@@ -182,20 +171,15 @@ static void control_scan(struct virtio_console* console) {
     }
 }
 
-static void virtio_or_status(struct virtio_mmio_config* vio, uint32_t flags) {
-    uint32_t old_status = io_read_32(&vio->status);
-    io_write_32(&vio->status, old_status | flags);
-}
-
 struct virtio_console* init_virtio_console() {
-    struct virtio_mmio_config* console_vio = virtio_probe_console();
+    struct virtio_config* console_vio = virtio_probe_console();
     if (!console_vio) {
         /* We didn't find a legacy multiport console */
         return NULL;
     }
 
     /* Reset device */
-    io_write_32(&console_vio->status, 0);
+    virtio_reset_device(console_vio);
 
     /* Acknowledge device */
     virtio_or_status(console_vio, VIRTIO_STATUS_ACKNOWLEDGE);
@@ -214,10 +198,11 @@ struct virtio_console* init_virtio_console() {
     virtio_or_status(console_vio, VIRTIO_STATUS_FEATURES_OK);
 
     /* The device accepted our features */
-    assert(io_read_32(&console_vio->status) & VIRTIO_STATUS_FEATURES_OK);
+    assert(virtio_get_status(console_vio) & VIRTIO_STATUS_FEATURES_OK);
 
     /* Set up control virtqueues */
-    io_write_32(&console_vio->guest_page_size, PAGE_SIZE);
+    virtio_set_guest_page_size(console_vio, PAGE_SIZE);
+
     control_setup(console_vio);
     console.vio = console_vio;
 
