@@ -22,11 +22,10 @@
  * SOFTWARE.
  */
 
+#include <trusty/sm_err.h>
+#include <trusty/smcall.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/util.h>
-
-#include "sm_err.h"
-#include "smcall.h"
 
 struct trusty_dev;
 
