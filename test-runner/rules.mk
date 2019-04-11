@@ -49,6 +49,7 @@ MODULE_SRCS += \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
 	$(QL_TIPC)/rpmb_proxy.c \
+	$(QL_TIPC)/trusty_dev_common.c \
 	$(QL_TIPC)/util.c \
 	$(QL_TIPC)/arch/arm/trusty_dev.c \
 
