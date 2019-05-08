@@ -35,9 +35,9 @@ MODULE_INCLUDES += \
 	$(LOCAL_DIR)/$(ARCH)/include \
 	$(QL_TIPC)/include \
 	$(LOCAL_DIR)/../interface/include \
-	$(LOCAL_DIR)/../../lk/include \
-	$(LOCAL_DIR)/../../lk/include/shared/lk \
-	$(LOCAL_DIR)/../../lk/lib/libc/include \
+	external/lk/include \
+	external/lk/include/shared/lk \
+	external/lk/lib/libc/include \
 
 MODULE_SRCS += \
 	$(LOCAL_DIR)/test-runner.c \
