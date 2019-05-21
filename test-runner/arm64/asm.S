@@ -132,6 +132,7 @@ trusty_idle:
     ldr x4, =0x1800f
     str x4, [x3, GICD_SGIR]
 
+    cbnz x1, no_wfi // also use event_poll to skip wfi on secondary cpus
     b wfi
 
 cpu0_idle:

@@ -203,5 +203,5 @@ int trusty_dev_shutdown(struct trusty_dev* dev) {
 
 int trusty_dev_nop(struct trusty_dev* dev) {
     int ret = trusty_std_call32(dev, SMC_SC_NOP, 0, 0, 0);
-    return ret == SM_ERR_NOP_DONE ? 0 : -1;
+    return ret == SM_ERR_NOP_DONE ? 0 : ret == SM_ERR_NOP_INTERRUPTED ? 1 : -1;
 }

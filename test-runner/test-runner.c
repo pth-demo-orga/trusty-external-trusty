@@ -77,8 +77,8 @@ void boot(int cpu) {
     if (cpu) {
         while (true) {
             ret = trusty_dev_nop(&trusty_dev);
-            if (!ret) {
-                trusty_idle(&trusty_dev, false);
+            if (ret >= 0) {
+                trusty_idle(&trusty_dev, ret);
             } else {
                 abort_msg("Secondary cpu unexpected error code\n");
             }
