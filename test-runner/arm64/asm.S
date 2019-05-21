@@ -24,7 +24,7 @@
 
 .text
 
-#define CPU_COUNT (4)
+#define MAX_CPU_COUNT (4)
 #define STACK_SIZE (4096)
 
 #define GICD_BASE (0x08000000)
@@ -35,6 +35,11 @@
     mrs \reg, mpidr_el1
     bic \reg, \reg, #(1<<24) /* Clear MT */
     bic \reg, \reg, #(3<<30) /* Clear RES1 and U */
+.endm
+
+.macro get_secondary_cpu_count, reg
+    mrs \reg, S3_1_C11_C0_2  /*l2ctlr_el1*/
+    lsr \reg, \reg, #24
 .endm
 
 .globl _start
@@ -62,6 +67,11 @@ vbar_setup_done:
     adr x1, stack_space_end
     cmp x2, x1
     bhi error
+
+    adr x1, cpu_ready
+    strb w0, [x1, x0] /* cpu_ready[cpuid] = cpuid */
+    dmb st
+    sev
     mov sp, x2
 
     /* Jump to c-code */
@@ -136,27 +146,53 @@ no_wfi:
 
 .globl arch_start_secondary_cpus
 arch_start_secondary_cpus:
-    sub sp, sp, #8
+    sub sp, sp, #16
     mov x1, #1
-    str x1, [sp]
+    get_secondary_cpu_count x2
+    cmp x2, #MAX_CPU_COUNT
+    blo .cpu_count_ok
+    mov x2, #(MAX_CPU_COUNT - 1)
+.cpu_count_ok:
+    stp x1, x2, [sp]
 start_secondary_cpu_loop:
     ldr x0, =0xC4000003 /* psci CPU_ON */
     adr x2, _start
     mov x3, #0
     smc 0
-    ldr x1, [sp]
+    cbnz x0, .start_secondary_cpu_failed
+    ldp x1, x2, [sp]
     add x1, x1, #1
-    str x1, [sp]
-    cmp x1, #CPU_COUNT
-    blo start_secondary_cpu_loop
-    add sp, sp, #8
+    stp x1, x2, [sp]
+    cmp x1, x2
+    bls start_secondary_cpu_loop
+    add sp, sp, #16
+
+    mov x1, #0
+.wait_for_secondary_cpu_loop:
+    wfe
+    dmb ld
+    adr x4, cpu_ready
+    ldrb w3, [x4, x1]
+    cmp x3, x1
+    b.ne .wait_for_secondary_cpu_loop
+    add x1, x1, #1
+    cmp x1, x2
+    bls .wait_for_secondary_cpu_loop
+
+    mov x0, 0
+
+.start_secondary_cpu_failed:
     ret
 
 .data
     .space STACK_SIZE
 stack:
-    .space STACK_SIZE * (CPU_COUNT - 1)
+    .space STACK_SIZE * (MAX_CPU_COUNT - 1)
 stack_space_end:
 
+cpu_ready:
+    .space MAX_CPU_COUNT
+
+    .align 3
 skip_cpu0_wfi:
     .long 0
