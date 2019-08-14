@@ -35,13 +35,12 @@ struct virtio_config;
  * Size of virtual queues. This can be dynamic, but since we do not have
  * memory allocation, supporting dynamic allocation seems like overkill.
  *
- * Notes for future developers:
- * o If you update VQ_SIZE, you will need to teach vq_send/recv how to find
- *   buffers.
- * o You need a way to create queues with a size 1 ring. The legacy virtio
- *   console only supports size 1 rings for the control message queue.
+ * Maximum number of ports we support in multiport of virtual serial console
+ * device is 16. To support 16 ports, vqueue size should be double size of
+ * maximum ports supported, since host would sent port add control event for
+ * all ports in one sequence.
  */
-#define VQ_SIZE 1
+#define VQ_SIZE 32
 
 /**
  * struct virtq_desc - VirtIO buffer descriptor

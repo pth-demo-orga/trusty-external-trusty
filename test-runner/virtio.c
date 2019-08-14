@@ -81,21 +81,17 @@ void vq_set_buf_r(struct virtq* vq,
 }
 
 ssize_t send_vq(struct virtq* vq, const char* data, size_t len) {
-    /*
-     * This logic only works for queue size 1.
-     * If someone wants a bigger ring in the future, they will need to add
-     * logic to select a buffer not currently in the available ring.
-     */
-    assert(VQ_SIZE == 1);
+    size_t idx = vq->old_used_idx;
+
     if (len == 0) {
         return 0;
     }
 
-    vq_set_buf_r(vq, 0, data, len);
-    vq_make_avail(vq, 0);
+    vq_set_buf_r(vq, idx % vq->num_bufs, data, len);
+    vq_make_avail(vq, idx % vq->num_bufs);
     vq_kick(vq);
     vq_wait(vq);
-    vq_set_buf_r(vq, 0, NULL, 0);
+    vq_set_buf_r(vq, idx % vq->num_bufs, NULL, 0);
     /*
      * QEMU's device does not set len correctly, as per the legacy-mode
      * notes. This means the value returned by vq_adv is unreliable, so we
@@ -106,20 +102,16 @@ ssize_t send_vq(struct virtq* vq, const char* data, size_t len) {
 }
 
 ssize_t recv_vq(struct virtq* vq, char* data, size_t len) {
-    /*
-     * This logic only works for queue size 1.
-     * If someone wants a bigger ring in the future, they will need to add
-     * logic to select a buffer not currently in the available ring.
-     */
-    assert(VQ_SIZE == 1);
+    size_t idx = vq->old_used_idx;
+
     if (len == 0) {
         return 0;
     }
 
-    vq_set_buf_w(vq, 0, data, len);
-    vq_make_avail(vq, 0);
+    vq_set_buf_w(vq, idx % vq->num_bufs, data, len);
+    vq_make_avail(vq, idx % vq->num_bufs);
     vq_kick(vq);
     vq_wait(vq);
-    vq_set_buf_w(vq, 0, NULL, 0);
+    vq_set_buf_w(vq, idx % vq->num_bufs, NULL, 0);
     return vq_adv(vq);
 }

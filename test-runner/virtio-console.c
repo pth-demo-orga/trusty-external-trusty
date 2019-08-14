@@ -29,7 +29,7 @@ struct console_control {
  * message plus the biggest name we're willing to put on a console.
  */
 #define CMSG_IN_MAX (sizeof(struct console_control) + MAX_PORT_NAME_SIZE)
-static char cmsg_buf[CMSG_IN_MAX];
+static char cmsg_buf[VQ_SIZE][CMSG_IN_MAX];
 
 static void send_control_msg(const struct console_control* msg) {
     send_vq(&cmd_output, (const void*)msg, sizeof(*msg));
@@ -48,36 +48,47 @@ static bool vq_quick_ready(struct virtq* vq) {
  * immediately available.
  *
  * To implement this, we need a slightly different approach than our other
- * queues. We keep a buffer in the available queue, and check if it has been
- * processed yet.
+ * queues. We keep a buffer array in the available queue, and check whether
+ * queue is ready for retrieving message.
  *
  * Once done reading the message, the caller must call release_control_msg
  * to relinquish ownership of the message before calling get_control_msg
  * again.
  */
-static const struct console_control* get_control_msg(size_t* buf_size) {
+static const struct console_control* get_control_msg(size_t* buf_size,
+                                                     size_t* msg_idx) {
+    uint32_t idx = cmd_input.old_used_idx % cmd_input.num_bufs;
+
     if (!vq_quick_ready(&cmd_input)) {
         return NULL;
     }
+
     *buf_size = vq_adv(&cmd_input);
-    return (struct console_control*)cmsg_buf;
+    *msg_idx = idx;
+
+    return (struct console_control*)cmsg_buf[idx];
 }
 
 /*
  * Releases ownership of the control_msg from get_control_msg, enabling
  * get_control_msg to be called again.
  */
-static void release_control_msg(void) {
-    vq_set_buf_w(&cmd_input, 0, cmsg_buf, sizeof(cmsg_buf));
-    vq_make_avail(&cmd_input, 0);
+static void release_control_msg(size_t idx) {
+    vq_set_buf_w(&cmd_input, idx, cmsg_buf[idx], CMSG_IN_MAX);
+    vq_make_avail(&cmd_input, idx);
 }
 
 static void control_setup(struct virtio_config* vio) {
+    uint32_t idx = 0;
+
     vq_init(&cmd_input, &cmd_input_raw, vio, true);
     vq_init(&cmd_output, &cmd_output_raw, vio, false);
     vq_attach(&cmd_input, VIRTIO_CONSOLE_CTRL_RX);
-    release_control_msg();
     vq_attach(&cmd_output, VIRTIO_CONSOLE_CTRL_TX);
+    for (idx = 0; idx < cmd_input.num_bufs; idx++) {
+        vq_set_buf_w(&cmd_input, idx, cmsg_buf[idx], CMSG_IN_MAX);
+        vq_make_avail(&cmd_input, idx);
+    }
 }
 
 static void port_open(struct virtio_console* console, size_t port_id) {
@@ -122,6 +133,7 @@ static void port_ready(struct virtio_console* console, size_t port_id) {
 
 static void control_scan(struct virtio_console* console) {
     size_t buf_size;
+    size_t msg_idx;
     const struct console_control* msg;
     for (size_t i = 0; i < MAX_PORTS; i++) {
         console->ports[i].host_connected = false;
@@ -136,7 +148,7 @@ static void control_scan(struct virtio_console* console) {
 
     send_control_msg(&dev_ready);
 
-    while ((msg = get_control_msg(&buf_size))) {
+    while ((msg = get_control_msg(&buf_size, &msg_idx))) {
         switch (msg->event) {
         case VIRTIO_CONSOLE_DEVICE_ADD:
             console->ports[msg->id].host_connected = true;
@@ -145,25 +157,25 @@ static void control_scan(struct virtio_console* console) {
              * Must be released before port_ready is called, or QEMU will
              * drop the response packet on the ground.
              */
-            release_control_msg();
+            release_control_msg(msg_idx);
             port_ready(console, msg->id);
             break;
         case VIRTIO_CONSOLE_DEVICE_REMOVE:
             console->ports[msg->id].host_connected = false;
-            release_control_msg();
+            release_control_msg(msg_idx);
             break;
         case VIRTIO_CONSOLE_PORT_NAME:
             buf_size = MIN(buf_size, MAX_PORT_NAME_SIZE - 1);
             trusty_memcpy(console->ports[msg->id].name, msg->buf, buf_size);
             console->ports[msg->id].name[buf_size] = 0;
-            release_control_msg();
+            release_control_msg(msg_idx);
             break;
         case VIRTIO_CONSOLE_DEVICE_READY:
         case VIRTIO_CONSOLE_CONSOLE_PORT:
         case VIRTIO_CONSOLE_RESIZE:
         case VIRTIO_CONSOLE_PORT_OPEN:
         default:
-            release_control_msg();
+            release_control_msg(msg_idx);
             break;
         }
     }
