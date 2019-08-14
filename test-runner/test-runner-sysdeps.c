@@ -70,6 +70,19 @@ size_t strlen(char const* s) {
     return ret;
 }
 
+int strcmp(char const* cs, char const* ct) {
+    int res;
+    const unsigned char* su1 = (const unsigned char*)cs;
+    const unsigned char* su2 = (const unsigned char*)ct;
+
+    while (1) {
+        if ((res = *su1 - *su2++) != 0 || !*su1++)
+            break;
+    }
+
+    return res;
+}
+
 /* ql-tipc sysdeps functions */
 
 void trusty_lock(struct trusty_dev* dev) {}
@@ -101,6 +114,10 @@ char* trusty_strcpy(char* dest, const char* src) {
 
 size_t trusty_strlen(const char* str) {
     return strlen(str);
+}
+
+int trusty_strcmp(const char* str1, const char* str2) {
+    return strcmp(str1, str2);
 }
 
 void* trusty_calloc(size_t n, size_t size) {

@@ -10,8 +10,6 @@
 
 #define DESIRED_FEATURES (VIRTIO_CONSOLE_F_MULTIPORT)
 
-#define MIN(x, y) (((x) > (y)) ? (x) : (y))
-
 static struct virtio_console console;
 
 static struct virtq cmd_input;

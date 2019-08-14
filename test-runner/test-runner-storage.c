@@ -32,14 +32,6 @@
 
 static const char* rpmb_devname = "rpmb0";
 
-static char strcmp(const char* a, const char* b) {
-    while ((*a != 0) && (*b != 0) && (*a == *b)) {
-        a++;
-        b++;
-    }
-    return *a - *b;
-}
-
 static struct virtq input;
 static struct virtq_raw input_raw;
 static struct virtq output;
@@ -48,7 +40,7 @@ static struct virtq_raw output_raw;
 static int rpmb_scan(struct virtio_console* console) {
     /* Scan for RPMB */
     for (size_t i = 0; i < MAX_PORTS; i++) {
-        if (!strcmp(rpmb_devname, console->ports[i].name)) {
+        if (!trusty_strcmp(rpmb_devname, console->ports[i].name)) {
             assert(console->ports[i].host_connected);
             return i;
         }

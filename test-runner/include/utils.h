@@ -26,6 +26,8 @@
 
 #include <stddef.h>
 
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 /**
  * init_log() - Enable the default logger.
  */

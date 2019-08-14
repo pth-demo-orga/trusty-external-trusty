@@ -109,6 +109,12 @@ char* trusty_strcpy(char* dest, const char* src);
  */
 size_t trusty_strlen(const char* str);
 /*
+ * Compare two strings, returns zero if strings are identical, else returns
+ * integer less than or greater than zero respectively if @str1 if less than
+ * or greater than @str2.
+ */
+int trusty_strcmp(const char* str1, const char* str2);
+/*
  * Allocate @n elements of size @size. Initializes memory to 0, returns pointer
  * to it.
  */
