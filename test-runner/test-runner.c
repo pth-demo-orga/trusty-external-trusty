@@ -85,17 +85,29 @@ void boot(int cpu) {
         }
     }
 
-    /* Read test arguments from host (port name of test server to connect to) */
+    /*
+     * Initialize VirtIO console device, it contains rpmb0 port for VirtIO
+     * RPMB and testrunner0 port to log message and pass test result to host
+     */
+    console = init_virtio_console();
+    if (NULL == console) {
+        return;
+    }
+
+    ret = init_log(console);
+    if (ret != 0) {
+        return;
+    }
+
+    /*
+     * Read test arguments from host (port name of test server to connect to)
+     */
     cmdline_len = host_get_cmdline(cmdline, sizeof(cmdline));
     if (!starts_with(boottest_cmd, cmdline, cmdline_len)) {
         /* No test was requested, boot next operating system */
         boot_next();
         return;
     }
-
-    init_log();
-    console = init_virtio_console();
-    assert(console);
 
     port = cmdline + sizeof(boottest_cmd) - 1;
 

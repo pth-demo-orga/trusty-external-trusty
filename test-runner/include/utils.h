@@ -25,13 +25,18 @@
 #pragma once
 
 #include <stddef.h>
+#include <virtio-console.h>
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 /**
  * init_log() - Enable the default logger.
+ * @console - virtio serial console device.
+ *
+ * Returns 0 if succeed to initialize logger, returns negative value
+ * otherwise.
  */
-void init_log(void);
+int init_log(struct virtio_console* console);
 
 /**
  * abort_msg() - Terminates abnormally, printing the message provided.
@@ -39,7 +44,7 @@ void init_log(void);
  *
  * This function is used to indicate framework failure as opposed to test
  * failure. For now, that is signaled by exiting with status code 2 via
- * semihosting.
+ * testrunner0 communication channel.
  */
 void abort_msg(const char* msg);
 

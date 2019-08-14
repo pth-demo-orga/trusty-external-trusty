@@ -25,7 +25,5 @@
 MODULE_SRCS += \
 	$(LOCAL_DIR)/$(ARCH)/asm.S \
 	$(LOCAL_DIR)/$(ARCH)/boot.c \
-	$(LOCAL_DIR)/$(ARCH)/log.c \
-	$(LOCAL_DIR)/$(ARCH)/semihosting.c \
 	$(LOCAL_DIR)/$(ARCH)/trusty_mem.c \
 	$(QL_TIPC)/arch/arm/trusty_dev.c \

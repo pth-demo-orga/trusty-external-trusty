@@ -83,7 +83,6 @@ error:
     adr x1, exit_params
     /* fall-through */
 
-.globl semihosting
 semihosting:
     hlt 0xf000
     ret
