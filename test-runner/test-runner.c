@@ -80,7 +80,7 @@ void boot(int cpu) {
             if (!ret) {
                 trusty_idle(&trusty_dev, false);
             } else {
-                log_msg("Secondary cpu unexpected error code\n");
+                abort_msg("Secondary cpu unexpected error code\n");
             }
         }
     }
