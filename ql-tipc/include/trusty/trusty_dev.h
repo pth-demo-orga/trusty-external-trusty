@@ -38,6 +38,10 @@ typedef uint64_t trusty_shared_mem_id_t;
 struct trusty_dev {
     void* priv_data;
     uint32_t api_version;
+    uint16_t ffa_local_id;
+    uint16_t ffa_remote_id;
+    void* ffa_tx;
+    void* ffa_rx;
 };
 
 /*

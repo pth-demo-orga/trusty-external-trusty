@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <trusty/arm_ffa.h>
 #include <trusty/trusty_mem.h>
 
 #define NS_PTE_MAIR_SHIFT 48
@@ -29,6 +30,9 @@
 
 int trusty_encode_page_info(struct ns_mem_page_info* inf, void* va) {
     /* Always report normal uncached memory as we are running without the MMU */
+    inf->paddr = (uint64_t)va;
+    inf->ffa_mem_attr = FFA_MEM_ATTR_NORMAL_MEMORY_UNCACHED;
+    inf->ffa_mem_perm = FFA_MEM_PERM_RW;
     inf->attr = (uint64_t)va |
                 ((uint64_t)NS_MAIR_NORMAL_UNCACHED << NS_PTE_MAIR_SHIFT);
 

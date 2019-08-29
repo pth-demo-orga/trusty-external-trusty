@@ -51,6 +51,9 @@
  */
 struct ns_mem_page_info {
     uint64_t attr;
+    uint64_t paddr;
+    uint8_t ffa_mem_attr;
+    uint8_t ffa_mem_perm;
 };
 
 struct trusty_dev;

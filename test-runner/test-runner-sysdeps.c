@@ -26,8 +26,8 @@
 #include <trusty/sysdeps.h>
 
 /* Size limits for bump allocators (trusty_calloc and trusty_alloc_pages) */
-#define HEAP_SIZE (40)
-#define PAGE_COUNT (1)
+#define HEAP_SIZE (56)
+#define PAGE_COUNT (3)
 
 static uint8_t heap[HEAP_SIZE];
 static int heap_allocated = 0;
