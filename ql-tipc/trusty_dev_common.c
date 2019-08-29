@@ -128,48 +128,47 @@ static int32_t trusty_std_call32(struct trusty_dev* dev,
     return ret;
 }
 
-static int trusty_call32_mem_buf(struct trusty_dev* dev,
-                                 uint32_t smcnr,
-                                 struct ns_mem_page_info* page,
-                                 uint32_t size) {
+static int trusty_call32_mem_buf_id(struct trusty_dev* dev,
+                                    uint32_t smcnr,
+                                    trusty_shared_mem_id_t buf_id,
+                                    uint32_t size) {
     trusty_assert(dev);
-    trusty_assert(page);
 
     if (SMC_IS_FASTCALL(smcnr)) {
-        return trusty_fast_call32(dev, smcnr, (uint32_t)page->attr,
-                                  (uint32_t)(page->attr >> 32), size);
+        return trusty_fast_call32(dev, smcnr, (uint32_t)buf_id,
+                                  (uint32_t)(buf_id >> 32), size);
     } else {
-        return trusty_std_call32(dev, smcnr, (uint32_t)page->attr,
-                                 (uint32_t)(page->attr >> 32), size);
+        return trusty_std_call32(dev, smcnr, (uint32_t)buf_id,
+                                 (uint32_t)(buf_id >> 32), size);
     }
 }
 
 int trusty_dev_init_ipc(struct trusty_dev* dev,
-                        struct ns_mem_page_info* buf,
+                        trusty_shared_mem_id_t buf_id,
                         uint32_t buf_size) {
-    return trusty_call32_mem_buf(dev, SMC_SC_TRUSTY_IPC_CREATE_QL_DEV, buf,
-                                 buf_size);
+    return trusty_call32_mem_buf_id(dev, SMC_SC_TRUSTY_IPC_CREATE_QL_DEV,
+                                    buf_id, buf_size);
 }
 
 int trusty_dev_exec_ipc(struct trusty_dev* dev,
-                        struct ns_mem_page_info* buf,
+                        trusty_shared_mem_id_t buf_id,
                         uint32_t buf_size) {
-    return trusty_call32_mem_buf(dev, SMC_SC_TRUSTY_IPC_HANDLE_QL_DEV_CMD, buf,
-                                 buf_size);
+    return trusty_call32_mem_buf_id(dev, SMC_SC_TRUSTY_IPC_HANDLE_QL_DEV_CMD,
+                                    buf_id, buf_size);
 }
 
 int trusty_dev_exec_fc_ipc(struct trusty_dev* dev,
-                           struct ns_mem_page_info* buf,
+                           trusty_shared_mem_id_t buf_id,
                            uint32_t buf_size) {
-    return trusty_call32_mem_buf(dev, SMC_FC_HANDLE_QL_TIPC_DEV_CMD, buf,
-                                 buf_size);
+    return trusty_call32_mem_buf_id(dev, SMC_FC_HANDLE_QL_TIPC_DEV_CMD, buf_id,
+                                    buf_size);
 }
 
 int trusty_dev_shutdown_ipc(struct trusty_dev* dev,
-                            struct ns_mem_page_info* buf,
+                            trusty_shared_mem_id_t buf_id,
                             uint32_t buf_size) {
-    return trusty_call32_mem_buf(dev, SMC_SC_TRUSTY_IPC_SHUTDOWN_QL_DEV, buf,
-                                 buf_size);
+    return trusty_call32_mem_buf_id(dev, SMC_SC_TRUSTY_IPC_SHUTDOWN_QL_DEV,
+                                    buf_id, buf_size);
 }
 
 static int trusty_init_api_version(struct trusty_dev* dev) {
@@ -211,4 +210,17 @@ int trusty_dev_shutdown(struct trusty_dev* dev) {
 int trusty_dev_nop(struct trusty_dev* dev) {
     int ret = trusty_std_call32(dev, SMC_SC_NOP, 0, 0, 0);
     return ret == SM_ERR_NOP_DONE ? 0 : ret == SM_ERR_NOP_INTERRUPTED ? 1 : -1;
+}
+
+int trusty_dev_share_memory(struct trusty_dev* dev,
+                            trusty_shared_mem_id_t* idp,
+                            struct ns_mem_page_info* pinfo,
+                            size_t page_count) {
+    *idp = pinfo->attr;
+    return 0;
+}
+
+int trusty_dev_reclaim_memory(struct trusty_dev* dev,
+                              trusty_shared_mem_id_t id) {
+    return 0;
 }

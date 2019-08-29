@@ -162,6 +162,7 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
                           struct trusty_dev* tdev,
                           size_t shared_buf_size) {
     int rc;
+    int rc2;
     struct trusty_ipc_dev* dev;
 
     trusty_assert(idev);
@@ -194,7 +195,15 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
         goto err_page_info;
     }
     /* call secure OS to register shared buffer */
-    rc = trusty_dev_init_ipc(dev->tdev, &dev->buf_ns, dev->buf_size);
+    rc = trusty_dev_share_memory(dev->tdev, &dev->buf_id, &dev->buf_ns,
+                                 dev->buf_size / PAGE_SIZE);
+    if (rc != 0) {
+        trusty_error("%s: failed (%d) to share memory\n", __func__, rc);
+        rc = TRUSTY_ERR_SECOS_ERR;
+        goto err_share_memory;
+    }
+
+    rc = trusty_dev_init_ipc(dev->tdev, dev->buf_id, dev->buf_size);
     if (rc != 0) {
         trusty_error("%s: failed (%d) to create Trusty IPC device\n", __func__,
                      rc);
@@ -209,6 +218,11 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
 
 err_page_info:
 err_create_sec_dev:
+    rc2 = trusty_dev_reclaim_memory(dev->tdev, dev->buf_id);
+    if (rc2) {
+        trusty_fatal("%s: failed to remove shared memory\n", __func__);
+    }
+err_share_memory:
     trusty_free_pages(dev->buf_vaddr, dev->buf_size / PAGE_SIZE);
 err_alloc_pages:
     trusty_free(dev);
@@ -222,11 +236,15 @@ void trusty_ipc_dev_shutdown(struct trusty_ipc_dev* dev) {
     trusty_debug("%s: shutting down Trusty IPC device (%p)\n", __func__, dev);
 
     /* shutdown Trusty IPC device */
-    rc = trusty_dev_shutdown_ipc(dev->tdev, &dev->buf_ns, dev->buf_size);
+    rc = trusty_dev_shutdown_ipc(dev->tdev, dev->buf_id, dev->buf_size);
     trusty_assert(!rc);
     if (rc != 0) {
         trusty_error("%s: failed (%d) to shutdown Trusty IPC device\n",
                      __func__, rc);
+    }
+    rc = trusty_dev_reclaim_memory(dev->tdev, dev->buf_id);
+    if (rc) {
+        trusty_fatal("%s: failed to remove shared memory\n", __func__);
     }
     trusty_free_pages(dev->buf_vaddr, dev->buf_size / PAGE_SIZE);
     trusty_free(dev);
@@ -266,7 +284,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
     cmd->payload_len = sizeof(*req) + port_len;
 
     /* call secure os */
-    rc = trusty_dev_exec_ipc(dev->tdev, &dev->buf_ns,
+    rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc) {
         /* secure OS returned an error */
@@ -300,7 +318,7 @@ int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
     /* no payload */
 
     /* call into secure os */
-    rc = trusty_dev_exec_ipc(dev->tdev, &dev->buf_ns,
+    rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc) {
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
@@ -335,7 +353,7 @@ bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan) {
     cmd->payload_len = 0;
 
     /* call into secure os */
-    rc = trusty_dev_exec_fc_ipc(dev->tdev, &dev->buf_ns,
+    rc = trusty_dev_exec_fc_ipc(dev->tdev, dev->buf_id,
                                 sizeof(*cmd) + cmd->payload_len);
     if (rc) {
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
@@ -379,7 +397,7 @@ int trusty_ipc_dev_get_event(struct trusty_ipc_dev* dev,
     cmd->payload_len = sizeof(struct trusty_ipc_wait_req);
 
     /* call into secure os */
-    rc = trusty_dev_exec_ipc(dev->tdev, &dev->buf_ns,
+    rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc) {
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
@@ -434,7 +452,7 @@ int trusty_ipc_dev_send(struct trusty_ipc_dev* dev,
     trusty_assert(msg_size == (size_t)cmd->payload_len);
 
     /* call into secure os */
-    rc = trusty_dev_exec_ipc(dev->tdev, &dev->buf_ns,
+    rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc < 0) {
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
@@ -467,7 +485,7 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
     /* no payload */
 
     /* call into secure os */
-    rc = trusty_dev_exec_ipc(dev->tdev, &dev->buf_ns,
+    rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc < 0) {
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);

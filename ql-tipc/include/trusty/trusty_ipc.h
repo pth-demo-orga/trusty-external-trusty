@@ -26,6 +26,7 @@
 #define TRUSTY_TRUSTY_IPC_H_
 
 #include <trusty/sysdeps.h>
+#include <trusty/trusty_dev.h>
 
 /*
  * handle_t is an opaque 32 bit value that is used to reference an
@@ -103,6 +104,7 @@ struct trusty_ipc_iovec {
 struct trusty_ipc_dev {
     void* buf_vaddr;
     size_t buf_size;
+    trusty_shared_mem_id_t buf_id;
     struct ns_mem_page_info buf_ns;
     struct trusty_dev* tdev;
 };
