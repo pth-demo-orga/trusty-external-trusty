@@ -75,6 +75,11 @@ int trusty_dev_init_ipc(struct trusty_dev* dev,
 int trusty_dev_exec_ipc(struct trusty_dev* dev,
                         struct ns_mem_page_info* buf,
                         uint32_t buf_size);
+
+int trusty_dev_exec_fc_ipc(struct trusty_dev* dev,
+                           struct ns_mem_page_info* buf,
+                           uint32_t buf_size);
+
 /*
  * Invokes deletion of queueless Trusty IPC device on the secure side.
  * @buf is unmapped, and all open channels are closed.

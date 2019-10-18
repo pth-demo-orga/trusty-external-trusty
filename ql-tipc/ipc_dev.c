@@ -36,6 +36,8 @@
 #define QL_TIPC_DEV_RECV 0x4
 #define QL_TIPC_DEV_DISCONNECT 0x5
 
+#define QL_TIPC_DEV_FC_HAS_EVENT 0x100
+
 #define LOCAL_LOG 0
 
 struct trusty_ipc_cmd_hdr {
@@ -314,6 +316,47 @@ int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
     trusty_debug("%s: chan %d: closed\n", __func__, handle);
 
     return TRUSTY_ERR_NONE;
+}
+
+bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan) {
+    int rc;
+    bool has_event;
+    volatile struct trusty_ipc_cmd_hdr* cmd;
+
+    trusty_assert(dev);
+
+    /* prepare command */
+    cmd = dev->buf_vaddr;
+    trusty_memset((void*)cmd, 0, sizeof(*cmd));
+    cmd->opcode = QL_TIPC_DEV_FC_HAS_EVENT;
+    cmd->handle = chan;
+
+    /* prepare payload  */
+    cmd->payload_len = 0;
+
+    /* call into secure os */
+    rc = trusty_dev_exec_fc_ipc(dev->tdev, &dev->buf_ns,
+                                sizeof(*cmd) + cmd->payload_len);
+    if (rc) {
+        trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
+        return false;
+    }
+
+    rc = check_response(dev, cmd, QL_TIPC_DEV_FC_HAS_EVENT);
+    if (rc) {
+        trusty_error("%s: get event cmd failed (%d)\n", __func__, rc);
+        return false;
+    }
+
+    if ((size_t)cmd->payload_len < sizeof(has_event)) {
+        trusty_error("%s: invalid response length (%zd)\n", __func__,
+                     (size_t)cmd->payload_len);
+        return false;
+    }
+
+    /* copy out event */
+    trusty_memcpy(&has_event, (const void*)cmd->payload, sizeof(has_event));
+    return has_event;
 }
 
 int trusty_ipc_dev_get_event(struct trusty_ipc_dev* dev,

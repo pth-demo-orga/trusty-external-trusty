@@ -158,6 +158,13 @@ int trusty_dev_exec_ipc(struct trusty_dev* dev,
                                  buf_size);
 }
 
+int trusty_dev_exec_fc_ipc(struct trusty_dev* dev,
+                           struct ns_mem_page_info* buf,
+                           uint32_t buf_size) {
+    return trusty_call32_mem_buf(dev, SMC_FC_HANDLE_QL_TIPC_DEV_CMD, buf,
+                                 buf_size);
+}
+
 int trusty_dev_shutdown_ipc(struct trusty_dev* dev,
                             struct ns_mem_page_info* buf,
                             uint32_t buf_size) {

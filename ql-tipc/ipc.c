@@ -60,7 +60,7 @@ static int wait_for_complete(struct trusty_ipc_chan* chan) {
         if (chan->complete)
             break;
 
-        if (rc == TRUSTY_EVENT_NONE)
+        if (rc == TRUSTY_EVENT_NONE && !trusty_ipc_dev_has_event(chan->dev, 0))
             trusty_ipc_dev_idle(chan->dev, true);
     }
 

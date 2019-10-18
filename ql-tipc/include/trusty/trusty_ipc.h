@@ -175,6 +175,14 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
 int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t chan);
 
 /*
+ * Calls into secure OS to check if there is a pending event. Returns a bool.
+ *
+ * @dev:   Trusty IPC device
+ * @chan:  handle for connection. Must be 0 which indicates any connection.
+ */
+bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan);
+
+/*
  * Calls into secure OS to receive pending event. Returns a trusty_err.
  *
  * @dev:   Trusty IPC device
