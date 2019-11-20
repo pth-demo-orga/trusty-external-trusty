@@ -89,7 +89,7 @@ void trusty_lock(struct trusty_dev* dev) {}
 
 void trusty_unlock(struct trusty_dev* dev) {}
 
-void trusty_local_irq_disable(unsigned long* state) {}
+__attribute__((weak)) void trusty_local_irq_disable(unsigned long* state) {}
 
 void trusty_local_irq_restore(unsigned long* state) {}
 

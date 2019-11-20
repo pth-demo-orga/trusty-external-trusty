@@ -75,7 +75,7 @@ vbar_setup_done:
     mov sp, x2
 
     /* Jump to c-code */
-    bl boot
+    bl boot_arm64
     /* fall-through */
 
 error:
@@ -126,10 +126,16 @@ trusty_idle:
     // skip_cpu0_wfi = cpunum (any value non-0 would work)
     stlr x2, [x0]
 
+#if GIC_VERSION > 2
+    // Send int 0 to cpu 0 to take it out of wfi
+    ldr x4, =(0 << 24) | 1
+    msr icc_sgi1r_el1, x4
+#else
     // Send int 15 to cpu 0 to take it out of wfi
     ldr x3, =GICD_BASE
     ldr x4, =0x1800f
     str x4, [x3, GICD_SGIR]
+#endif
 
     cbnz x1, no_wfi // also use event_poll to skip wfi on secondary cpus
     b wfi
@@ -143,6 +149,22 @@ wfi:
     wfi
 no_wfi:
     ret
+
+#if GIC_VERSION > 2
+.globl trusty_local_irq_disable
+trusty_local_irq_disable:
+    /*
+     * Clear doorbell interrupt from trusty or ipi sent from secondary cores in
+     * trusty_idle above.
+     */
+    mrs x0, icc_iar1_el1
+    cmp x0, #1020
+    b.hs .trusty_local_irq_disable_done
+    msr icc_eoir1_el1, x0
+    b trusty_local_irq_disable
+.trusty_local_irq_disable_done:
+    ret
+#endif
 
 .globl arch_start_secondary_cpus
 arch_start_secondary_cpus:

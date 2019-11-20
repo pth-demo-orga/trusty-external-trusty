@@ -58,6 +58,11 @@ int host_system(const char* cmd);
 int arch_start_secondary_cpus(void);
 
 /*
+ * Called from arch to enter test-runner on each cpu.
+ */
+void boot(int cpu);
+
+/*
  * Boot next operating system.
  */
 void boot_next(void);
