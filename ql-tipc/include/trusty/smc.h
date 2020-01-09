@@ -24,9 +24,32 @@
  */
 
 /*
- * Execute SMC call into trusty
+ * Execute SMC call into trusty or el3
  */
-unsigned long smc(unsigned long r0,
-                  unsigned long r1,
-                  unsigned long r2,
-                  unsigned long r3);
+
+struct smc_ret8 {
+    unsigned long r0;
+    unsigned long r1;
+    unsigned long r2;
+    unsigned long r3;
+    unsigned long r4;
+    unsigned long r5;
+    unsigned long r6;
+    unsigned long r7;
+};
+
+struct smc_ret8 smc8(unsigned long r0,
+                     unsigned long r1,
+                     unsigned long r2,
+                     unsigned long r3,
+                     unsigned long r4,
+                     unsigned long r5,
+                     unsigned long r6,
+                     unsigned long r7);
+
+static inline unsigned long smc(unsigned long r0,
+                                unsigned long r1,
+                                unsigned long r2,
+                                unsigned long r3) {
+    return smc8(r0, r1, r2, r3, 0, 0, 0, 0).r0;
+}
