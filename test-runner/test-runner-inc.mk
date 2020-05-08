@@ -23,20 +23,12 @@
 
 TEST_RUNNER_DIR := $(GET_LOCAL_DIR)
 
-TEST_RUNNER_MEMBASE ?= 0x60000000 # Default MEMBASE for arm64 qemu
 TEST_RUNNER_ARCH ?= $(ARCH)
 
 XBIN_NAME := test-runner
 XBIN_TOP_MODULE := $(TEST_RUNNER_DIR)
 XBIN_ARCH := $(TEST_RUNNER_ARCH)
 XBIN_BUILDDIR := $(BUILDDIR)/test-runner
-XBIN_LINKER_SCRIPT := $(BUILDDIR)/test-runner.ld
-
-# rules for generating the linker script
-$(BUILDDIR)/test-runner.ld: $(TEST_RUNNER_DIR)/$(XBIN_ARCH)/test-runner.ld linkerscript.phony
-	@echo generating $@
-	@$(MKDIR)
-	$(NOECHO)sed "s/%MEMBASE%/$(TEST_RUNNER_MEMBASE)/g" < $< > $@.tmp
-	@$(call TESTANDREPLACEFILE,$@.tmp,$@)
+XBIN_MEMBASE := 0x60000000
 
 include make/xbin.mk
