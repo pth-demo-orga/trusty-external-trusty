@@ -25,8 +25,10 @@
 MODULE_DEFINES += \
 	GIC_VERSION=$(GIC_VERSION) \
 
-MODULE_SRCS += \
+MODULE_SRCS_FIRST := \
 	$(LOCAL_DIR)/$(ARCH)/asm.S \
+
+MODULE_SRCS += \
 	$(LOCAL_DIR)/$(ARCH)/arch.c \
 	$(LOCAL_DIR)/$(ARCH)/boot.c \
 	$(LOCAL_DIR)/$(ARCH)/trusty_mem.c \
