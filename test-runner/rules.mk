@@ -25,6 +25,11 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
 
+# test-runner does not run in trusty, to enable CFI it depends on
+# trusty modules so anything that needs runtime support is probably
+# not worth the effort
+MODULE_DISABLE_CFI := true
+
 QL_TIPC = $(LOCAL_DIR)/../ql-tipc
 
 MODULE_DEFINES += \
