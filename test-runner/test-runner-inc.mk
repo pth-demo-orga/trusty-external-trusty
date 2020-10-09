@@ -23,12 +23,24 @@
 
 TEST_RUNNER_DIR := $(GET_LOCAL_DIR)
 
-TEST_RUNNER_ARCH ?= $(ARCH)
+TRUSTY_TEST_RUNNER_SAVED_ARCH = $(ARCH)
+ifneq ($(strip $(TEST_RUNNER_ARCH)),)
+ARCH := $(TEST_RUNNER_ARCH)
+endif
 
-XBIN_NAME := test-runner
-XBIN_TOP_MODULE := $(TEST_RUNNER_DIR)
-XBIN_ARCH := $(TEST_RUNNER_ARCH)
-XBIN_BUILDDIR := $(BUILDDIR)/test-runner
-XBIN_MEMBASE := 0x60000000
+TRUSTY_APP_MEMBASE := 0x60000000
 
-include make/xbin.mk
+$(eval $(call standard_name_for_arch,STANDARD_ARCH_NAME,$(ARCH),$(SUBARCH)))
+include arch/$(ARCH)/toolchain.mk
+
+# The lk module.mk file uses this variable to determine if it should add
+# kernel-specific flags to the build.
+USER_TASK_MODULE := true
+
+$(eval $(call trusty-build-rule,$(TEST_RUNNER_DIR)))
+
+TRUSTY_APP_MEMBASE :=
+
+ARCH := $(TRUSTY_TEST_RUNNER_SAVED_ARCH)
+TRUSTY_TEST_RUNNER_SAVED_ARCH :=
+USER_TASK_MODULE :=

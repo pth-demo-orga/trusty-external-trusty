@@ -25,6 +25,9 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
 
+# Override default build directory
+TRUSTY_APP_BUILDDIR := $(BUILDDIR)/test-runner
+
 # test-runner does not run in trusty, to enable CFI it depends on
 # trusty modules so anything that needs runtime support is probably
 # not worth the effort
@@ -69,5 +72,10 @@ else
 MODULE_SRCS += $(LOCAL_DIR)/virtio-pci.c
 endif
 
+# Do not include implicit dependencies
+MODULE_ADD_IMPLICIT_DEPS := false
+
+MODULE_COMPILEFLAGS += -fno-builtin
+
 include $(LOCAL_DIR)/$(ARCH)/rules.mk
-include make/module.mk
+include make/trusted_app.mk
