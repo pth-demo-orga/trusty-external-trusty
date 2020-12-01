@@ -30,6 +30,10 @@ MODULE := $(LOCAL_DIR)
 # not worth the effort
 MODULE_DISABLE_CFI := true
 
+# SCS requires us to allocate a guard region from the heap so it is
+# probably not worth the effort for the same reasons that CFI isn't
+MODULE_DISABLE_SCS := true
+
 QL_TIPC = $(LOCAL_DIR)/../ql-tipc
 
 MODULE_DEFINES += \
