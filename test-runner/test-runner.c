@@ -26,6 +26,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <test-runner-arch.h>
+#include <trusty/keymaster.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
@@ -132,6 +133,17 @@ void boot(int cpu) {
     } else {
         log_msg("Could not find serial port rpmb0, skipping storage proxy.\n");
     }
+
+    /*
+     * Check that keymaster can at least be connected to.
+     * TODO: Use in full boot path with typical calls.
+     */
+    ret = km_tipc_init(ipc_dev);
+    if (ret != 0) {
+        log_msg("km_tipc_init failed\n");
+        return;
+    }
+    km_tipc_shutdown(ipc_dev);
 
     ret = arch_start_secondary_cpus();
     if (ret) {

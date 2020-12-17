@@ -57,6 +57,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/virtio-console.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
+	$(QL_TIPC)/keymaster.c \
+	$(QL_TIPC)/keymaster_serializable.c \
 	$(QL_TIPC)/rpmb_proxy.c \
 	$(QL_TIPC)/trusty_dev_common.c \
 	$(QL_TIPC)/util.c \
