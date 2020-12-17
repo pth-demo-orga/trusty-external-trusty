@@ -453,8 +453,7 @@ int trusty_atap_read_uuid_str(char** uuid_p) {
     *uuid_p[kUuidSize] = '\0';
 
     uint32_t response_size = kUuidSize;
-    int rc = km_do_tipc(KM_ATAP_READ_UUID, true, NULL, 0, *uuid_p,
-                        &response_size);
+    int rc = km_do_tipc(KM_ATAP_READ_UUID, NULL, 0, *uuid_p, &response_size);
     if (rc < 0) {
         trusty_error("failed to read uuid: %d\n", rc);
         trusty_free(*uuid_p);
