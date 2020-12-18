@@ -26,7 +26,7 @@
 #include <trusty/sysdeps.h>
 
 /* Size limits for bump allocators (trusty_calloc and trusty_alloc_pages) */
-#define HEAP_SIZE (56)
+#define HEAP_SIZE (56 + 6 * 4)
 #define PAGE_COUNT (3)
 
 static uint8_t heap[HEAP_SIZE];
@@ -132,11 +132,6 @@ void* trusty_calloc(size_t n, size_t size) {
 }
 
 void trusty_free(void* addr) {
-    /*
-     * We don't have a real allocator. Make sure we don't trigger any
-     * code-paths that need dynamic memory.
-     */
-    trusty_abort();
 }
 
 void* trusty_alloc_pages(unsigned count) {

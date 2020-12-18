@@ -143,6 +143,12 @@ void boot(int cpu) {
         log_msg("km_tipc_init failed\n");
         return;
     }
+    ret = trusty_set_boot_params(0, 0, KM_VERIFIED_BOOT_UNVERIFIED, false, NULL,
+                                 0, NULL, 0);
+    if (ret != 0) {
+        log_msg("trusty_set_boot_params failed\n");
+        return;
+    }
     km_tipc_shutdown(ipc_dev);
 
     ret = arch_start_secondary_cpus();
