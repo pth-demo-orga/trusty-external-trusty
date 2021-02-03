@@ -173,7 +173,7 @@ struct virtq {
     size_t num_bufs;
     size_t queue_id;
     struct virtq_raw* raw;
-    size_t old_used_idx;
+    uint16_t old_used_idx;
     struct virtio_config* vio;
 };
 
