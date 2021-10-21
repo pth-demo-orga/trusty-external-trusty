@@ -23,9 +23,12 @@
  */
 
 #include <assert.h>
+#include <interface/hwbcc/hwbcc.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <test-runner-arch.h>
+#include <trusty/hwbcc.h>
 #include <trusty/keymaster.h>
 #include <trusty/rpmb.h>
 #include <trusty/trusty_dev.h>
@@ -150,6 +153,77 @@ void boot(int cpu) {
         return;
     }
     km_tipc_shutdown();
+
+    /**
+     * Check that HWBCC can be connected to.
+     */
+    ret = hwbcc_tipc_init(ipc_dev);
+    if (ret != 0) {
+        log_msg("hwbcc_tipc_init failed.\n");
+        return;
+    }
+    uint8_t dice_artifacts[HWBCC_MAX_RESP_PAYLOAD_SIZE];
+    size_t resp_payload_size = 0;
+    ret = hwbcc_get_dice_artifacts(0, dice_artifacts, sizeof(dice_artifacts),
+                                   &resp_payload_size);
+    if (ret != 0) {
+        log_msg("hwbcc_get_dice_artifacts failed.\n");
+    }
+
+    /**
+     * dice_artifacts expects the following CBOR encoded structure.
+     * We calculate the expected size, including CBOR header sizes.
+     * BccHandover = {
+     *      1 : bstr .size 32,	// CDI_Attest
+     *      2 : bstr .size 32,	// CDI_Seal
+     *      3 : Bcc,            // Cert_Chain
+     * }
+     * Bcc = [
+     *      PubKeyEd25519, // UDS
+     *      + BccEntry,    // Root -> leaf (KM_pub)
+     *  ]
+     */
+    size_t UDS_encoded_size = 45;
+    size_t bcc_entry_encoded_size = 463;
+    size_t bcc_encoded_size =
+            UDS_encoded_size + bcc_entry_encoded_size + 1 /*array header*/;
+    size_t DICE_CDI_SIZE = 32;
+    size_t bcc_handover_size =
+            2 * DICE_CDI_SIZE + bcc_encoded_size + 8 /*map header*/;
+
+    if (resp_payload_size != bcc_handover_size) {
+        log_msg("hwbcc_get_dice_artifacts failed with incorrect response size.\n");
+    }
+
+    /**
+     * Note: In ABL, `hwbcc_ns_deprivilege` needs to be called
+     * after retrieving dice artifacts.
+     */
+    ret = hwbcc_ns_deprivilege();
+
+    if (ret != 0) {
+        log_msg("hwbcc_ns_deprivilege failed.\n");
+    }
+
+    /* Close the firt connection and try to connect again, which should fail due
+     * to the deprivilege call. */
+    hwbcc_tipc_shutdown();
+
+    ret = hwbcc_tipc_init(ipc_dev);
+    if (ret != 0) {
+        log_msg("hwbcc_tipc_init failed.\n");
+        return;
+    }
+    memset(dice_artifacts, 0, sizeof(dice_artifacts));
+    resp_payload_size = 0;
+    ret = hwbcc_get_dice_artifacts(0, dice_artifacts, sizeof(dice_artifacts),
+                                   &resp_payload_size);
+
+    if (ret == 0) {
+        log_msg("hwbcc_ns_deprivilege is broken.\n");
+    }
+
+    hwbcc_tipc_shutdown();
 
     ret = arch_start_secondary_cpus();
     if (ret) {

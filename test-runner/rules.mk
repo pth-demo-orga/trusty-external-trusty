@@ -58,6 +58,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/test-runner-comm-port.c \
 	$(LOCAL_DIR)/virtio.c \
 	$(LOCAL_DIR)/virtio-console.c \
+	$(QL_TIPC)/hwbcc.c \
 	$(QL_TIPC)/ipc.c \
 	$(QL_TIPC)/ipc_dev.c \
 	$(QL_TIPC)/keymaster.c \
