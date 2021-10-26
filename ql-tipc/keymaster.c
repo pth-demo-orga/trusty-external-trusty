@@ -276,6 +276,7 @@ int km_tipc_init(struct trusty_ipc_dev* dev) {
         trusty_error("failed (%d) to connect to '%s'\n", rc, KEYMASTER_PORT);
         return rc;
     }
+    initialized = true;
 
     int32_t version = -1;
     rc = km_get_version(&version);
