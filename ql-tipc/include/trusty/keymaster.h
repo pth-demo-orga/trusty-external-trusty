@@ -38,10 +38,8 @@ int km_tipc_init(struct trusty_ipc_dev* dev);
 
 /*
  * Shutdown Keymaster TIPC client.
- *
- * @dev: initialized with trusty_ipc_dev_create
  */
-void km_tipc_shutdown(struct trusty_ipc_dev* dev);
+void km_tipc_shutdown(void);
 
 /*
  * Set Keymaster boot parameters. Returns one of trusty_err.

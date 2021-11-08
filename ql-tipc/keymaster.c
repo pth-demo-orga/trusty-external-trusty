@@ -293,7 +293,7 @@ int km_tipc_init(struct trusty_ipc_dev* dev) {
     return TRUSTY_ERR_NONE;
 }
 
-void km_tipc_shutdown(struct trusty_ipc_dev* dev) {
+void km_tipc_shutdown(void) {
     if (!initialized)
         return;
     /* close channel */

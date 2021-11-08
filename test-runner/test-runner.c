@@ -149,7 +149,7 @@ void boot(int cpu) {
         log_msg("trusty_set_boot_params failed\n");
         return;
     }
-    km_tipc_shutdown(ipc_dev);
+    km_tipc_shutdown();
 
     ret = arch_start_secondary_cpus();
     if (ret) {
