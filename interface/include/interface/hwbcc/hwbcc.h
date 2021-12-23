@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef TRUSTY_INTERFACE_HWBCC_H
-#define TRUSTY_INTERFACE_HWBCC_H
+#pragma once
 
 #include <lk/compiler.h>
 #include <stdint.h>
@@ -74,5 +73,3 @@ struct hwbcc_resp_hdr {
 STATIC_ASSERT(sizeof(struct hwbcc_resp_hdr) == 12);
 
 #define HWBCC_MAX_RESP_PAYLOAD_SIZE 1024
-
-#endif /*TRUSTY_INTERFACE_HWBCC_H*/

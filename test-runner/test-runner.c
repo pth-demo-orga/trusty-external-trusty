@@ -179,8 +179,8 @@ void boot(int cpu) {
      *      3 : Bcc,            // Cert_Chain
      * }
      * Bcc = [
-     *      PubKeyEd25519, // UDS
-     *      + BccEntry,    // Root -> leaf (KM_pub)
+     *      PubKeyEd25519, // UDS (Unique Device Secret)
+     *      + BccEntry,    // Root -> leaf
      *  ]
      */
     size_t UDS_encoded_size = 45;
@@ -189,7 +189,8 @@ void boot(int cpu) {
             UDS_encoded_size + bcc_entry_encoded_size + 1 /*array header*/;
     size_t DICE_CDI_SIZE = 32;
     size_t bcc_handover_size =
-            2 * DICE_CDI_SIZE + bcc_encoded_size + 8 /*map header*/;
+            2 * DICE_CDI_SIZE + bcc_encoded_size +
+            8 /*map header, map keys and two 32 bytes indicators*/;
 
     if (resp_payload_size != bcc_handover_size) {
         log_msg("hwbcc_get_dice_artifacts failed with incorrect response size.\n");

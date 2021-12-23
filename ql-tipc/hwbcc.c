@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <assert.h>
 #include <trusty/hwbcc.h>
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
+
 #include <uapi/uapi/err.h>
 
 static struct trusty_ipc_chan hwbcc_chan;
@@ -31,9 +31,8 @@ int hwbcc_tipc_init(struct trusty_ipc_dev* dev) {
     trusty_assert(dev);
     trusty_ipc_chan_init(&hwbcc_chan, dev);
 
-    /* connect to hwbcc service and wait for connect to complete */
     trusty_debug("In hwbcc_tipc_init: connecting to hwbcc service.\n");
-    int rc = trusty_ipc_connect(&hwbcc_chan, HWBCC_PORT, true);
+    int rc = trusty_ipc_connect(&hwbcc_chan, HWBCC_PORT, true /*wait*/);
     if (rc < 0) {
         trusty_error("In hwbcc_tipc_init:: failed (%d) to connect to '%s'.\n",
                      rc, HWBCC_PORT);
@@ -99,13 +98,6 @@ static int read_response_with_data(struct hwbcc_req_hdr* hdr,
         return TRUSTY_ERR_GENERIC;
     }
 
-    if (resp_hdr.payload_size > HWBCC_MAX_RESP_PAYLOAD_SIZE ||
-        resp_hdr.payload_size > buf_size) {
-        trusty_error("Response payload size is too large: %d\n",
-                     resp_hdr.payload_size);
-        return TRUSTY_ERR_GENERIC;
-    }
-
     *out_size = resp_hdr.payload_size;
     return rc;
 }
@@ -144,8 +136,8 @@ int hwbcc_get_dice_artifacts(uint64_t context,
                              uint8_t* dice_artifacts,
                              size_t dice_artifacts_buf_size,
                              size_t* dice_artifacts_size) {
-    assert(dice_artifacts);
-    assert(dice_artifacts_size);
+    trusty_assert(dice_artifacts);
+    trusty_assert(dice_artifacts_size);
 
     struct hwbcc_req_hdr hdr;
     hdr.cmd = HWBCC_CMD_GET_DICE_ARTIFACTS;

@@ -39,7 +39,15 @@ void hwbcc_tipc_shutdown(void);
  * non-secure world (e.g. ABL).
  * @context:                    Context information passed in by the client.
  * @dice_artifacts:             Pointer to a buffer to store the CBOR encoded
- * DICE artifacts.
+ *                              DICE artifacts.
+ * CDDL of the DICE artifacts:
+ * BccHandover = {
+ *    1 : bstr .size 32,	// CDI_Attest
+ *    2 : bstr .size 32,	// CDI_Seal
+ *    3 : bstr .cbor Bcc,	// Boot certificate chain
+ * }
+ * CDDL of Bcc:
+ * https://cs.android.com/android/platform/superproject/+/master:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/ProtectedData.aidl;l=116
  * @dice_artifacts_buf_size:    Size of the buffer pointed by @dice_artifacts.
  * @dice_artifacts_size:        Actual size of the buffer used.
  */
@@ -48,7 +56,8 @@ int hwbcc_get_dice_artifacts(uint64_t context,
                              size_t dice_artifacts_buf_size,
                              size_t* dice_artifacts_size);
 /**
- * Deprivilege hwbcc from serving calls to non-secure clients.
+ * Deprivilege hwbcc from serving calls (i.e. stop serving calls after this
+ * point) to non-secure clients.
  */
 int hwbcc_ns_deprivilege(void);
 
